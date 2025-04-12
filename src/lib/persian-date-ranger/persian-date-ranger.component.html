@@ -1,0 +1,37 @@
+<div class="date-ranger" (clickOutSide)="clickOutSide()">
+  <input #inputElement
+         type="text"
+         [ngClass]="[displayMode === 'inline' ? 'show-date-picker' : '' , inputClass]"
+         [(ngModel)]="date"
+         (focusin)="changeShowDatePickerStatus(true)"
+         (ngModelChange)="onDateChange($event)"
+         [placeholder]="placeholder"/>
+
+  <persian-date-calendar
+    [ngClass]="[
+      showDatePickerStatus ? '' : 'show-date-picker',
+      position,
+      displayMode === 'inline' ? 'inline' : ''
+    ]"
+    [datePickerMode]="true"
+    (showDateValue)="getSelectedDate($event)"
+    [dateFormat]="dateFormat"
+    [selectedYear]="selectedYear"
+    [selectedMonth]="selectedMonth"
+    [selectedDay]="selectedDay"
+    [showNearMonthDays]="showNearMonthDays"
+    [showGotoToday]="showGotoToday"
+    [enableChangeMonth]="enableChangeMonth"
+    [enableChangeYear]="enableChangeYear"
+    [enableNavigateMonth]="enableNavigateMonth"
+    [enableNavigateYear]="enableNavigateYear"
+    [currentMonthShadow]="currentMonthShadow"
+    [holidays]="holidays"
+    [calendarMode]="calendarMode"
+    [closeOnSelectDate]="closeOnSelectDate"
+    [defaultValue]="defaultValue"
+    [rangePicker]="rangePicker"
+    [minDate]="minDate"
+    [maxDate]="maxDate"
+  ></persian-date-calendar>
+</div>

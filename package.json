@@ -1,0 +1,16 @@
+{
+  "name": "persian-date-ranger",
+  "version": "3.0.2",
+  "keywords": ["angular", "persian", "date", "picker"],
+  "description": "A Persian date range picker component for Angular",
+  "peerDependencies": {
+    "@angular/common": "^16.0.0",
+    "@angular/core": "^16.0.0",
+    "rxjs": "^7.0.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "jalali-moment": "^3.3.10"
+  },
+  "sideEffects": false
+}

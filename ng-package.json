@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../dist/persian-date-ranger",
+  "lib": {
+    "entryFile": "src/public-api.ts",
+    "styleIncludePaths": ["src/styles"]
+  },
+  "allowedNonPeerDependencies": [
+    "jalali-moment"
+  ],
+  "assets": [
+    "src/assets"
+  ]
+}

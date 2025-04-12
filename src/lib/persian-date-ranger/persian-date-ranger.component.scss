@@ -1,0 +1,57 @@
+.date-ranger {
+  position: relative;
+  display: inline-block;
+}
+
+persian-date-calendar {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  z-index: 9999999;
+}
+
+.date-ranger-input {
+  border: 0;
+}
+
+.show-date-picker {
+  display: none;
+}
+
+.inline {
+  display: block;
+  position: relative;
+}
+
+.position-top {
+  transform: translate(-50%, -108%);
+}
+
+.position-bottom {
+  transform: translate(-50%, 1%);
+}
+
+.position-left {
+  transform: translate(-140%, -50%);
+}
+
+.position-right {
+  transform: translate(40%, -50%);
+}
+
+.position-top-right {
+  transform: translate(40%, -8%);
+}
+
+.position-top-left {
+  transform: translate(-140%, -8%);
+}
+
+.position-bottom-right {
+  transform: translate(40%, -100%);
+}
+
+.position-bottom-left {
+  transform: translate(-140%, -100%);
+}

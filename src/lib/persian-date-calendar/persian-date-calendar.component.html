@@ -1,0 +1,113 @@
+<div class="date-content">
+  <div class="date-container"
+       [ngClass]="[
+         currentMonthShadow && selectedMonth === currentMonth ? 'date-container-shadow':'',
+         calendarMode ? 'calendar-mode' : '',
+         datePickerMode ? 'date-picker-mode' : ''
+       ]">
+
+    <div class="date-container-header" (clickOutSide)="close()">
+      <ng-container>
+
+        <div *ngIf="showDatePicker && enableNavigateMonth && enableChangeMonth" (click)="changeMonth(1)"
+             class="btn arrow left-arrow">
+          <span>ماه بعد</span>
+          <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
+            <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z" fill="#515961" />
+          </svg>
+        </div>
+        <div *ngIf="showDatePicker && enableNavigateMonth && enableChangeMonth" (click)="changeMonth(-1)"
+             class="btn arrow right-arrow">
+          <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
+            <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" fill="#515961" />
+          </svg>
+          <span>ماه قبل</span>
+        </div>
+
+        <div *ngIf="(showMonths || showYears) && enableNavigateYear && enableChangeYear"
+             (click)="changeYear(1)" class="btn arrow left-arrow">
+          <span>سال بعد</span>
+          <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
+            <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z" fill="#515961" />
+          </svg>
+        </div>
+        <div *ngIf="(showMonths || showYears) && enableNavigateYear && enableChangeYear"
+             (click)="changeYear(-1); $event.stopPropagation()" class="btn arrow right-arrow">
+          <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
+            <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" fill="#515961" />
+          </svg>
+          <span>سال قبل</span>
+        </div>
+
+        <div class="year-header">
+          <div *ngIf="showDatePicker || calendarMode"
+               (click)="setCalendarView('months'); $event.stopPropagation()"
+               [ngClass]="[enableChangeMonth ? '' : 'overlay-container']"
+               class="title">
+            {{ selectedMonthTitle }}
+          </div>
+          <div>
+            <span [ngClass]="[enableChangeYear ? '' : 'overlay-container']"
+                  (click)="openYearSelection()" class="title">
+              {{ shownYear }}
+            </span>
+            <div class="year-content" *ngIf="showYears">
+              <div class="year-container">
+                <div class="form-group">
+                  <div class="btn select-year-btn" (click)="selectYear(inputYear); $event.stopPropagation()">
+                    برو به سال
+                  </div>
+                  <input class="select-year-input" type="text" [(ngModel)]="inputYear" pattern="[0-9]*">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <div class="date-container-body" [ngClass]="showYears ? 'overlay-container' : ''">
+      <ng-container *ngIf="!showMonths">
+        <div class="daysOfWeek" *ngFor="let week of weeks"
+             [ngClass]="calendarMode ? 'overlay-container' : ''">
+          <div class="day" *ngFor="let weekDay of week">
+
+            <div class="week" *ngIf="weekDay.dayTitle">{{ weekDay.dayTitle }}</div>
+
+            <div class="days" *ngIf="weekDay.day"
+                 [ngClass]="[
+                   weekDay.currentDay ? 'currentDay' : '',
+                   weekDay.holiday ? 'holiday' : '',
+                   weekDay.datesBetween ? 'datesBetween' : '',
+                   isSelectedDay(weekDay) && !calendarMode ? 'selectedDate' : '',
+                   weekDay.currentMonth ? '' : 'nearDays',
+                   calendarMode ? 'calendarMode' : '',
+                   weekDay.disabled ? 'disabled-day' : ''
+                 ]"
+                 (click)="onDaySelected(weekDay); onRangeDaySelected(weekDay)"
+                 (pointermove)="onHoverDay(weekDay)">
+              {{ weekDay.day }}
+            </div>
+          </div>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="showMonths">
+        <div class="months">
+          <div class="month" *ngFor="let monthTitle of monthsTitles; let i = index"
+               [ngClass]="[ selectedMonth === i ? 'selected-month' : '' ]">
+            <div (click)="selectMonth(i); setCalendarView('datePicker'); $event.stopPropagation()">
+              {{ monthTitle }}
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <div *ngIf="showDatePicker && showGotoToday" class="date-container-footer">
+      <div class="current-day-content">
+        <div class="btn current-day" (click)="gotoToday()">امروز</div>
+      </div>
+    </div>
+
+  </div>
+</div>

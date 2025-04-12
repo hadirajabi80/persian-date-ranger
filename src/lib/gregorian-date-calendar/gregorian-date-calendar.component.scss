@@ -1,0 +1,335 @@
+/* You can add global styles to this file, and also import other style files */
+
+
+* {
+  font-family: sans-serif;
+}
+
+
+* {
+  color: #484d56;
+  direction: ltr !important;
+}
+
+.btn {
+  border: 0;
+  cursor: pointer;
+  background-color: unset;
+  box-shadow: unset !important;
+}
+
+.week {
+  font-size: 12px;
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: .7rem;
+}
+
+.daysOfWeek {
+  direction: ltr;
+  display: flex;
+  flex-wrap: wrap
+}
+
+.years {
+  direction: ltr;
+  display: flex;
+  flex-wrap: wrap;
+  text-align: center;
+}
+
+.currentDay {
+  //border: 1px solid rgb(193 235 255);
+  background-color: rgb(229, 244, 255);
+}
+
+.holiday {
+  //background-color: #ffb0b0;
+  color: #ff5353;
+  font-weight: 600;
+}
+
+.holiday:hover {
+  background-color: #ffdbdb !important;
+}
+
+.datesBetween{
+  background-color: rgb(193 235 255);
+  font-weight: 600;
+}
+
+.selectedDate {
+  background-color: rgb(193 235 255);
+  font-weight: 600;
+}
+
+.selectedDate.holiday {
+  background-color: #ffcccc;
+}
+
+.date-content {
+  position: relative;
+}
+
+.date-container {
+  position: relative;
+  width: 16rem;
+  background-color: #fdfdfd;
+  z-index: 999;
+  border-radius: 2rem;
+  height: 20rem;
+  box-shadow: 0 0 3px 0 rgb(199 199 199);
+  border: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.day {
+  flex: 1;
+  font-size: 12px;
+}
+
+.date-container-header {
+  flex: 0 0 2.5rem;
+  margin-top: .4rem;
+}
+
+.days {
+  padding: .5rem 0;
+  border-radius: 50%;
+  text-align: center;
+}
+
+.days:hover {
+  cursor: pointer;
+  background-color: rgb(233, 244, 255);
+  border: 0;
+  font-weight: 600;
+}
+
+.date-container-body {
+  position: static;
+  padding: 0 5px;
+  flex: 1;
+}
+
+.nearDays {
+  opacity: 0.4;
+}
+
+.title {
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 0;
+}
+
+.title-year {
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: .2rem;
+}
+
+.date-container-footer {
+  flex: 0 0 2.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.arrow {
+  position: absolute;
+  text-align: center;
+  padding: 2px;
+  border: 0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  font-size: 9px;
+}
+
+.arrow:hover {
+  font-weight: 600;
+}
+
+.right-arrow {
+  right: 6px;
+}
+
+.left-arrow {
+  left: 6px;
+}
+
+.months {
+  height: 16rem;
+  display: flex;
+  flex-wrap: wrap;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.month {
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 12px;
+  flex-basis: calc(33.3333% - 10px); /* تقسیم به سه بخش */
+  flex-grow: 0;
+  box-sizing: border-box;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.month:hover {
+  background-color: rgb(233, 244, 255);
+  font-weight: 600;
+}
+
+.selected-month {
+  background-color: rgb(193 235 255);
+  font-weight: 600;
+}
+
+.current-day {
+  font-size: 12px;
+  border: 0;
+}
+
+.current-day-content {
+  bottom: 10px;
+  margin-bottom: .2rem;
+}
+
+.current-day:hover {
+  font-weight: 600;
+}
+
+.year-content {
+  position: absolute;
+  z-index: 99999;
+  background-color: white;
+  width: 90%;
+  display: flex;
+  justify-content: center;
+  padding: 10px 10px;
+  height: 4rem;
+  box-shadow: 0 0 2px 0;
+  border: 0;
+  left: 1%;
+  align-items: center;
+  top: 15%;
+  border-radius: 10px;
+  pointer-events: all !important;
+}
+
+.year-container {
+  position: relative;
+}
+
+.select-year-btn {
+  font-size: 12px;
+  padding: 5px 2px;
+  color: white;
+  background-color: #abd4ff;
+  border-color: #abd4ff;
+  border-radius: 0 .5rem .5rem 0;
+  white-space: nowrap;
+}
+
+.select-year-btn:active {
+  border-color: #abd4ff;
+  background-color: #cee8ff;
+  color: #484d56;
+}
+
+.select-year-input {
+  border: 1px solid #abd4ff;
+  flex: 1;
+  border-radius: .5rem 0 0 .5rem;
+  padding: .375rem .75rem;
+  direction: ltr !important;
+  width: 100%;
+}
+
+.select-year-input:focus {
+  outline: unset;
+  box-shadow: 0 0 3px 0 rgb(211, 224, 255);
+}
+
+.input-group {
+  height: 2rem !important;
+  top: 0;
+  bottom: 0;
+}
+
+.overlay-container {
+  pointer-events: none;
+}
+
+.year-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-group {
+  display: flex;
+  align-items: stretch;
+}
+
+.input {
+  flex: 1;
+  border: 1px solid #ced4da;
+  border-radius: .25rem 0 0 .25rem;
+  padding: .375rem .75rem;
+  line-height: 1.5;
+}
+
+.date-container-shadow {
+  box-shadow: 0 0 3px 0 rgb(115, 115, 115) !important;
+}
+
+.calendar-mode:hover {
+  box-shadow: 0 0 8px 0 #737373 !important;
+}
+
+.date-picker-mode {
+  //position: absolute;
+  width: 14rem;
+  z-index: 999;
+  height: 18rem;
+
+  .day {
+    font-size: 11px;
+    max-height: 30px !important;
+    max-width: 30px !important;
+  }
+
+  .days {
+    padding: .4rem 0;
+  }
+
+  .week {
+    font-size: 11px;
+  }
+
+  .months {
+    height: 14rem;
+    font-size: 12px;
+  }
+
+  //.date-content {
+  //  position: absolute;
+  //}
+}
+
+.disabled-day {
+  color: #ccc;
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.6;
+}

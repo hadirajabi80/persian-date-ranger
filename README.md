@@ -101,7 +101,10 @@ To select a specific date for display, you can use the following tag:
 
 ```html
 
-<persian-date-calendar [selectedMonth]="8" selectedDay="2" [selectedYear]="1403"></persian-date-calendar>
+<persian-date-calendar [selectedMonth]="8" 
+                       selectedDay="2" 
+                       [selectedYear]="1403">
+</persian-date-calendar>
 ```
 
 You can also use the Gregorian version of the component in the exact same way:

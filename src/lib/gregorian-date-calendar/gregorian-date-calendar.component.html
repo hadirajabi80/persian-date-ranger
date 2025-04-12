@@ -29,11 +29,11 @@
           <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
             <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z" fill="#515961" />
           </svg>
-          <span>last year</span>
+          <span>Previous Year</span>
         </div>
         <div *ngIf="(showMonths || showYears) && enableNavigateYear && enableChangeYear"
              (click)="changeYear(1); $event.stopPropagation()" class="btn arrow right-arrow">
-          <span>next year</span>
+          <span>Next Year</span>
           <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
             <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" fill="#515961" />
           </svg>
@@ -56,7 +56,7 @@
                 <div class="form-group">
                   <input class="select-year-input" type="text" [(ngModel)]="inputYear" pattern="[0-9]*">
                   <div class="btn select-year-btn" (click)="selectYear(inputYear); $event.stopPropagation()">
-                    select year
+                    Select Year
                   </div>
                 </div>
               </div>

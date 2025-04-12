@@ -128,6 +128,7 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
         parsedDate = moment(this.minDate, this.dateFormat);
       }
       this.shownMonth = parsedDate.jMonth();
+      this.shownYear = parsedDate.jYear();
       this.updateCalendarWeeks();
 
     }

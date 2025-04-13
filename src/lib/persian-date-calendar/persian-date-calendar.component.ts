@@ -1,5 +1,5 @@
 import {
-  ChangeDetectionStrategy,
+  ChangeDetectionStrategy, ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
@@ -39,7 +39,7 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
 
   @Input() selectedYear: number = Number(moment().jYear());
   @Input() selectedMonth: number = Number(moment().jMonth());
-  @Input() selectedDay: number = Number(moment().jDate());
+  @Input() selectedDay: number = 25;
 
   @Input() calendarMode: boolean = false;
   @Input() datePickerMode: boolean = false;
@@ -87,7 +87,7 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
   weeks: any[] = [];
   regex = /^(1[0-4]\d{2})[\/-]?(0[1-9]|1[0-2])[\/-]?(0[1-9]|[12]\d|3[01])$/;
 
-  constructor() {
+  constructor(private cd: ChangeDetectorRef) {
     if (this.rangePicker) {
       this.hoverSubject.subscribe(() => {
         this.onHoverAction();
@@ -116,7 +116,7 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
 
     if (changes['selectedYear'] && changes['selectedYear'].currentValue) {
       this.shownYear = changes['selectedYear'].currentValue;
-      this.selectMonth(this.shownMonth);
+      this.selectYear(this.shownYear);
     }
 
     if (changes['minDate'] && changes['minDate'].currentValue) {
@@ -161,14 +161,12 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
     const daysInMonth = moment.jDaysInMonth(this.shownYear, this.shownMonth);
     const firstDay = moment(`${this.shownYear}/${this.shownMonth + 1}/1`, 'jYYYY/jMM/jDD');
     const lastDay = moment(`${this.shownYear}/${this.shownMonth + 1}/${daysInMonth}`, 'jYYYY/jMM/jDD');
-
     const startOffset = firstDay.jDay();
 
     let currentDay = moment(firstDay).subtract(startOffset, 'days');
 
     while (currentDay <= lastDay) {
       const week: any[] = [];
-
       for (let i = 0; i < 7; i++) {
         if (this.showNearMonthDays || currentDay.jMonth() === this.shownMonth) {
           week.push({
@@ -224,6 +222,7 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
     this.shownMonth = monthIndex;
     this.selectedMonthTitle = this.monthsTitles[this.shownMonth] || '';
     this.updateCalendarWeeks();
+    this.cd.markForCheck();
   }
 
   selectYear(newYear: number): void {
@@ -231,6 +230,7 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
       this.shownYear = Number(newYear);
       this.updateCalendarWeeks();
       this.setCalendarView('datePicker');
+      this.cd.markForCheck();
     } else {
       this.setCalendarView('datePicker');
       this.inputYear = this.shownYear;
@@ -320,7 +320,6 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
     } else {
       dateStr = dateStr.format(this.dateFormat);
     }
-
     if (emitValue) {
       this.showDateValue.emit(dateStr);
     }

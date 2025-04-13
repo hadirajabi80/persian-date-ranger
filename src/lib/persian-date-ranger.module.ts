@@ -7,6 +7,8 @@ import {OutsideDirective} from "./directives/outside.directive";
 import {StickyFlipPositionDirective} from "./directives/dynamic-position.directive";
 import {GregorianDateCalendarComponent} from "./gregorian-date-calendar/gregorian-date-calendar.component";
 import {GregorianDateRangerComponent} from "./gregorian-date-ranger/gregorian-date-ranger.component";
+import {PersianDateRangerDirective} from "./directives/persian-date-ranger.directive";
+import {GregorianDateRangerDirective} from "./directives/gregorian-date-ranger.directive";
 
 
 @NgModule({
@@ -16,7 +18,9 @@ import {GregorianDateRangerComponent} from "./gregorian-date-ranger/gregorian-da
     GregorianDateCalendarComponent,
     GregorianDateRangerComponent,
     OutsideDirective,
-    StickyFlipPositionDirective
+    StickyFlipPositionDirective,
+    PersianDateRangerDirective,
+    GregorianDateRangerDirective
   ],
   imports: [
     CommonModule,
@@ -26,7 +30,9 @@ import {GregorianDateRangerComponent} from "./gregorian-date-ranger/gregorian-da
     PersianDateRangerComponent,
     PersianDateCalendarComponent,
     GregorianDateCalendarComponent,
-    GregorianDateRangerComponent
+    GregorianDateRangerComponent,
+    PersianDateRangerDirective,
+    GregorianDateRangerDirective
   ]
 })
 export class PersianDateRangerModule {

@@ -60,7 +60,7 @@ export class GregorianDateRangerComponent
     private cdr: ChangeDetectorRef,
     private renderer: Renderer2
   ) {
-    super();
+    super(cdr);
   }
 
   ngAfterViewInit(): void {
@@ -108,7 +108,6 @@ export class GregorianDateRangerComponent
       }
     };
   }
-
 
   registerOnTouched(fn: any): void {
     this.onTouched = () => {

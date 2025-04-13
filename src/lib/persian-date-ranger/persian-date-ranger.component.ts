@@ -62,7 +62,7 @@ export class PersianDateRangerComponent
     private cdr: ChangeDetectorRef,
     private renderer: Renderer2
   ) {
-    super();
+    super(cdr);
   }
 
   ngAfterViewInit(): void {
@@ -190,7 +190,6 @@ export class PersianDateRangerComponent
     this.selectedYear = parsedDate.jYear();
     this.selectedMonth = parsedDate.jMonth();
     this.selectedDay = parsedDate.jDate();
-    // this.updateCalendarWeeks();
     this.emitSelectedDate(false);
   }
 }

@@ -1,5 +1,5 @@
 import {
-  ChangeDetectionStrategy,
+  ChangeDetectionStrategy, ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
@@ -97,7 +97,7 @@ export class GregorianDateCalendarComponent implements OnInit, OnChanges {
   weeks: any[] = [];
   regex = /^(1[0-4]\d{2})[\/-]?(0[1-9]|1[0-2])[\/-]?(0[1-9]|[12]\d|3[01])$/;
 
-  constructor() {
+  constructor(private cd: ChangeDetectorRef) {
     if (this.rangePicker) {
       this.hoverSubject.subscribe(() => {
         this.onHoverAction();
@@ -124,7 +124,7 @@ export class GregorianDateCalendarComponent implements OnInit, OnChanges {
 
     if (changes['selectedYear'] && changes['selectedYear'].currentValue !== undefined) {
       this.shownYear = changes['selectedYear'].currentValue;
-      this.selectMonth(this.shownMonth);
+      this.selectYear(this.shownYear);
     }
 
     if (changes['minDate'] && changes['minDate'].currentValue) {
@@ -174,7 +174,6 @@ export class GregorianDateCalendarComponent implements OnInit, OnChanges {
     const tempFirst = moment(firstDay);
     tempFirst.subtract(startOffset, 'days');
     let currentDay = moment(tempFirst);
-
     while (currentDay.isBefore(lastDay) || currentDay.isSame(lastDay, 'day')) {
       const week: any[] = [];
 
@@ -233,6 +232,7 @@ export class GregorianDateCalendarComponent implements OnInit, OnChanges {
     this.shownMonth = monthIndex;
     this.selectedMonthTitle = this.monthsTitles[this.shownMonth]?.shortName  || '';
     this.updateCalendarWeeks();
+    this.cd.markForCheck();
   }
 
   selectYear(newYear: number): void {
@@ -240,6 +240,7 @@ export class GregorianDateCalendarComponent implements OnInit, OnChanges {
       this.shownYear = Number(newYear);
       this.updateCalendarWeeks();
       this.setCalendarView('datePicker');
+      this.cd.markForCheck();
     } else {
       this.setCalendarView('datePicker');
       this.inputYear = this.shownYear;

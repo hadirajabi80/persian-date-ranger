@@ -130,6 +130,20 @@ Example for range selection with Gregorian date:
 </gregorian-date-ranger>
 ```
 
+### Directive Usage
+
+The Persian Date Ranger package provides several directives that allow you to attach date picker functionality to any input element in your Angular application. Here's how to use them:
+
+```html
+<input type="text" persianDateRanger
+       (selectedDate)="onDateSelected($event)">
+
+or
+
+<input type="text" gregorianDateRanger
+       (selectedDate)="onDateSelected($event)">
+```
+
 ---
 
 ## API

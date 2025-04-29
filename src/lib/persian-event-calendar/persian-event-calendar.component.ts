@@ -1,83 +1,92 @@
 import {
-  ChangeDetectionStrategy, ChangeDetectorRef,
-  Component,
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component, ElementRef,
   EventEmitter,
   Input,
   OnChanges,
   OnInit,
   Output,
-  SimpleChanges
+  SimpleChanges, ViewChild
 } from '@angular/core';
-import moment, {Moment} from "jalali-moment";
 import {DateFormat} from "../models/date-format";
 import {Subject} from "rxjs";
+import moment, {Moment} from "jalali-moment";
+import {IEvent} from "../models/event";
+import {IEventCategory} from "../models/event-category";
+import {EventPeriods} from "../models/event-periods";
+import {Weekday} from "../models/week-day";
 
 @Component({
-  selector: 'persian-date-calendar',
-  templateUrl: './persian-date-calendar.component.html',
-  styleUrls: ['./persian-date-calendar.component.scss'],
+  selector: 'persian-event-calendar',
+  templateUrl: './persian-event-calendar.component.html',
+  styleUrl: './persian-event-calendar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PersianDateCalendarComponent implements OnInit, OnChanges {
+export class PersianEventCalendarComponent implements OnInit, OnChanges,AfterViewInit {
 
   @Input() showNearMonthDays: boolean = true;
   @Input() showGotoToday: boolean = true;
   @Input() enableChangeMonth: boolean = true;
   @Input() enableChangeYear: boolean = true;
   @Input() enableNavigateMonth: boolean = true;
-  @Input() enableNavigateYear: boolean = true;
   @Input() currentMonthShadow: boolean = false;
-  @Input() closeOnSelectDate: boolean = false;
   @Input() rangePicker: boolean = false;
   @Input() startDate: any;
   @Input() endDate: any;
-  @Input() showCurrentDate: boolean = false;
+  @Input() showCurrentDate: boolean = true;
   @Input() holidays: { format: string, date: any[] } | undefined;
+  @Input() dayClass: string = '';
+  @Input() eventClass: string = '';
 
   @Input() minDate: string;
   @Input() maxDate: string;
 
-  @Input() selectedYear: number = Number(moment().jYear());
-  @Input() selectedMonth: number = Number(moment().jMonth());
-  @Input() selectedDay: number = Number(moment().jDate());
-
-  @Input() calendarMode: boolean = false;
-  @Input() datePickerMode: boolean = false;
   @Input() dateFormat: DateFormat = "jYYYY/jMM/jDD";
   @Input() defaultValue: boolean = false;
+  @Input() showFullDayTitle: boolean = false;
 
   @Input() datesBetween: string[] = [];
 
+  @Input() events: IEvent[] = [];
+  @Input() eventCategories: IEventCategory[] = [];
+  @Input() maxEventsPerDay: number = 3;
+
+  @Output() moreEventsEmit: EventEmitter<IEvent[]> = new EventEmitter<IEvent[]>();
+  @Output() selectedEventEmit: EventEmitter<IEvent> = new EventEmitter<IEvent>();
+
   @Output() showDateValue: EventEmitter<string> = new EventEmitter<string>();
+
+  selectedYear: number = Number(moment().jYear());
+  selectedMonth: number = Number(moment().jMonth());
+  selectedDay: number = Number(moment().jDate());
 
   currentMonth: number = Number(moment().jMonth());
 
-  weekDaysTitles: { index: number, title: string }[] = [
-    {index: 1, title: 'ش'},
-    {index: 2, title: 'ی'},
-    {index: 3, title: 'د'},
-    {index: 4, title: 'س'},
-    {index: 5, title: 'چ'},
-    {index: 6, title: 'پ'},
-    {index: 7, title: 'ج'}
+  weekDaysTitles: { index: number, title: string, fullTitle: string }[] = [
+    {index: 1, title: 'ش', fullTitle: 'شنبه'},
+    {index: 2, title: 'ی', fullTitle: 'یکشنبه'},
+    {index: 3, title: 'د', fullTitle: 'دوشنبه'},
+    {index: 4, title: 'س', fullTitle: 'سه شنبه'},
+    {index: 5, title: 'چ', fullTitle: 'چهارشنبه'},
+    {index: 6, title: 'پ', fullTitle: 'پنجشنبه'},
+    {index: 7, title: 'ج', fullTitle: 'جمعه'}
   ];
   daysOfWeek: any[] = [];
 
   shownYear: number = this.selectedYear;
   shownMonth: number = this.selectedMonth;
-  shownDay: number = this.selectedDay;
 
-  showYears: boolean = false;
-  showMonths: boolean = false;
-  showDatePicker: boolean = true;
   selectedMonthTitle: string = '';
-
-  inputYear: number = this.selectedYear;
 
   private hoverSubject = new Subject<void>();
   hoveredDay: number | null = null;
   hoveredMonth: number | null = null;
   hoveredYear: number | null = null;
+
+  showMonthList = false;
+  showYearsList = false;
 
   monthsTitles: string[] = [
     'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
@@ -86,6 +95,13 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
 
   weeks: any[] = [];
   regex = /^(1[0-4]\d{2})[\/-]?(0[1-9]|1[0-2])[\/-]?(0[1-9]|[12]\d|3[01])$/;
+
+  @ViewChild('scrollContainer') scrollContainer?: ElementRef;
+
+  years: number[] = [];
+
+  minYear = 1300;
+  maxYear = Number(moment().jYear()) + 100;
 
   constructor(private cd: ChangeDetectorRef) {
     if (this.rangePicker) {
@@ -96,12 +112,17 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
   }
 
   ngOnInit() {
-    this.inputYear = this.selectedYear;
-
     this.initWeekTitles();
     this.selectMonth(this.shownMonth);
 
     this.emitSelectedDate(this.defaultValue);
+  }
+
+  ngAfterViewInit() {
+    this.generateInitialYears();
+    setTimeout(() => {
+      this.scrollToSelectedYear();
+    }, 0);
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -151,13 +172,14 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
   private initWeekTitles(): void {
     this.daysOfWeek = [];
     for (const day of this.weekDaysTitles) {
-      this.daysOfWeek.push({dayTitle: day.title});
+      this.daysOfWeek.push({dayTitle: this.showFullDayTitle ? day.fullTitle : day.title});
     }
   }
 
   updateCalendarWeeks(): void {
     const weeksArray: any[][] = [];
     weeksArray.push(this.daysOfWeek);
+
     const daysInMonth = moment.jDaysInMonth(this.shownYear, this.shownMonth);
     const firstDay = moment(`${this.shownYear}/${this.shownMonth + 1}/1`, 'jYYYY/jMM/jDD');
     const lastDay = moment(`${this.shownYear}/${this.shownMonth + 1}/${daysInMonth}`, 'jYYYY/jMM/jDD');
@@ -169,6 +191,9 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
       const week: any[] = [];
       for (let i = 0; i < 7; i++) {
         if (this.showNearMonthDays || currentDay.jMonth() === this.shownMonth) {
+
+          const dayEvents = this.getEventsForDate(currentDay);
+
           week.push({
             year: currentDay.jYear(),
             month: currentDay.jMonth(),
@@ -177,8 +202,25 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
             holiday: this.checkHoliday(currentDay),
             datesBetween: this.isInHoverRange(currentDay),
             currentMonth: this.showNearMonthDays ? currentDay.jMonth() === this.shownMonth : true,
-            disabled: !this.isWithinRange(currentDay)
+            disabled: !this.isWithinRange(currentDay),
+            events: dayEvents.map(ev => ({
+              title: ev.title,
+              color: this.getEventColor(ev),
+              startDate: ev.startDate,
+              endDate: ev.endDate,
+              priority: ev.priority,
+              description: ev.description,
+              enterDateFormat: ev.enterDateFormat,
+              period: ev.period,
+              categoryId: ev.categoryId,
+              location: ev.location,
+              reminders: ev.reminders,
+              repeatOnDays: ev.repeatOnDays
+            })).sort((a, b) => {
+              return (b.priority ?? 2) - (a.priority ?? 2);
+            })
           });
+
         } else {
           week.push('');
         }
@@ -189,21 +231,78 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
     this.weeks = weeksArray;
   }
 
-  setCalendarView(view: 'years' | 'months' | 'datePicker'): void {
-    this.showYears = (view === 'years');
-    this.showMonths = (view === 'months');
-    this.showDatePicker = (view === 'datePicker');
+  private getEventsForDate(date: Moment): IEvent[] {
+    const formattedDate = date.format(this.dateFormat);
+    return this.events.filter(event => {
+      const eventStart = moment(event.startDate, this.dateFormat);
+      const eventEnd = moment(event.endDate, this.dateFormat);
+      const FormatedEventStart = moment(event.startDate, event.enterDateFormat).format(this.dateFormat);
+
+      if (date.isBefore(eventStart, 'day') || (event.endDate && date.isAfter(eventEnd, 'day'))) {
+        return false;
+      }
+      if (event.period === EventPeriods.Once) {
+        return formattedDate === FormatedEventStart;
+      }
+
+      if (event.period === EventPeriods.Daily) {
+        return true;
+      }
+
+      if (event.period === EventPeriods.EveryOtherDay) {
+        const diff = date.diff(eventStart, 'days');
+        return diff % 2 === 0;
+      }
+
+      if (event.period === EventPeriods.EvenDays) {
+        const weekday = date.day();
+        return [6, 1, 3].includes(weekday);
+      }
+
+      if (event.period === EventPeriods.OddDays) {
+        const weekday = date.day();
+        return [0, 2, 4].includes(weekday);
+      }
+
+      if (event.period === EventPeriods.Weekly) {
+        const dayOfWeek = date.day();
+        return event.repeatOnDays?.includes(dayOfWeek as Weekday);
+      }
+
+      if (event.period === EventPeriods.Monthly) {
+        return eventStart.jDate() === date.jDate();
+      }
+
+      if (event.period === EventPeriods.Yearly) {
+        return eventStart.jMonth() === date.jMonth() && eventStart.jDate() === date.jDate();
+      }
+
+      return false;
+    });
   }
 
-  openYearSelection(): void {
-    this.setCalendarView('years');
-    this.inputYear = this.shownYear;
+  getEventTime(event: IEvent) {
+    if (['jYYYY/jMM/jDD HH:mm', 'jYYYY-jMM-jDD HH:mm', 'jYYYYjMMjDD HH:mm', 'YYYY/MM/DD HH:mm', 'YYYY-MM-DD HH:mm', 'YYYYMMDD HH:mm']
+      .includes(event.enterDateFormat)) {
+      const start = moment(event.startDate, event.enterDateFormat).format('HH:mm');
+      const end = moment(event.endDate, event.enterDateFormat).format('HH:mm');
+      return `${start}-${end}`;
+    } else {
+      return '';
+    }
   }
 
-  changeYear(offset: number): void {
-    this.shownYear += offset;
-    this.inputYear = this.shownYear;
-    this.updateCalendarWeeks();
+  openEventsPopup(day: any) {
+    this.moreEventsEmit.emit(day.events);
+  }
+
+  clickOnEvent(event: IEvent) {
+    this.selectedEventEmit.emit(event);
+  }
+
+  private getEventColor(event: IEvent): string {
+    const category = this.eventCategories.find(c => c.name === event.categoryId);
+    return category ? category.color : '#000000';
   }
 
   changeMonth(offset: number): void {
@@ -223,17 +322,16 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
     this.selectedMonthTitle = this.monthsTitles[this.shownMonth] || '';
     this.updateCalendarWeeks();
     this.cd.markForCheck();
+    this.showMonthList = false;
   }
 
   selectYear(newYear: number): void {
     if (newYear && this.isNumeric(newYear.toString())) {
       this.shownYear = Number(newYear);
       this.updateCalendarWeeks();
-      this.setCalendarView('datePicker');
       this.cd.markForCheck();
-    } else {
-      this.setCalendarView('datePicker');
-      this.inputYear = this.shownYear;
+      this.showYearsList = false;
+      this.selectedYear = newYear;
     }
   }
 
@@ -249,18 +347,6 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
     this.hoveredMonth = weekDay.month;
     this.hoveredYear = weekDay.year;
     this.hoverSubject.next();
-  }
-
-  onRangeDaySelected(weekDay: any): void {
-    let formatted: any = moment(`${this.selectedYear}/${this.selectedMonth + 1}/${this.selectedDay}`, 'jYYYY/jMM/jDD');
-    if (this.dateFormat === 'timestamp') {
-      formatted = formatted.valueOf();
-
-    } else {
-      formatted = formatted.format(this.dateFormat);
-    }
-
-    this.checkSelectedDateRange(formatted);
   }
 
   private checkSelectedDateRange(selectedDate: string): void {
@@ -333,12 +419,6 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
 
     this.selectMonth(this.shownMonth);
     this.selectYear(this.shownYear);
-  }
-
-  close(): void {
-    if (this.showYears) {
-      this.setCalendarView('datePicker');
-    }
   }
 
   private checkToday(date: Moment): boolean {
@@ -414,6 +494,95 @@ export class PersianDateCalendarComponent implements OnInit, OnChanges {
       return moment(dateStr, 'fa', true);
     } else {
       return moment(dateStr, this.dateFormat, 'fa', true);
+    }
+  }
+
+  getCurrentDay() {
+    const today = moment().locale('fa');
+
+    const weekDay: string = today.format('dddd');
+
+    const dayOfMonth: string = today.jDate().toString();
+
+    const monthName: string = today.format('jMMMM');
+
+    const year: string = today.format('jYYYY');
+
+    return `${weekDay} - ${dayOfMonth} ${monthName} ${year}`;
+  }
+
+
+  generateInitialYears() {
+    const currentYear = Number(moment().jYear());
+    const startYear = currentYear - 5;
+    const endYear = currentYear + 6;
+
+    for (let year = startYear; year <= endYear; year++) {
+      if (year >= this.minYear && year <= this.maxYear) {
+        this.years.push(year);
+      }
+    }
+  }
+
+  onScroll() {
+    const container = this.scrollContainer?.nativeElement;
+
+    const scrollTop = container.scrollTop;
+    const scrollHeight = container.scrollHeight;
+    const offsetHeight = container.offsetHeight;
+
+    if (scrollTop === 0) {
+      this.loadPreviousYears();
+    }
+
+    if (scrollTop + offsetHeight >= scrollHeight - 10) {
+      this.loadNextYears();
+    }
+  }
+
+  loadPreviousYears() {
+    const firstYear = this.years[0];
+
+    if (firstYear <= this.minYear) return;
+
+    const newYears: number[] = [];
+    for (let i = 1; i <= 5; i++) {
+      const yearToAdd = firstYear - i;
+      if (yearToAdd >= this.minYear) {
+        newYears.push(yearToAdd);
+      }
+    }
+    this.years = [...newYears.reverse(), ...this.years];
+
+    setTimeout(() => {
+      if (this.scrollContainer) {
+        this.scrollContainer.nativeElement.scrollTop = 5 * 40;
+      }
+    }, 0);
+  }
+
+  loadNextYears() {
+    const lastYear = this.years[this.years.length - 1];
+
+    if (lastYear >= this.maxYear) return;
+
+    const newYears: number[] = [];
+    for (let i = 1; i <= 5; i++) {
+      const yearToAdd = lastYear + i;
+      if (yearToAdd <= this.maxYear) {
+        newYears.push(yearToAdd);
+      }
+    }
+    this.years = [...this.years, ...newYears];
+  }
+
+  scrollToSelectedYear() {
+    const index = this.years.indexOf(this.selectedYear);
+    if (index !== -1) {
+      const scrollPosition = index * 40 - 120;
+      if (this.scrollContainer){
+        this.scrollContainer.nativeElement.scrollTop = scrollPosition;
+      }
     }
   }
 }

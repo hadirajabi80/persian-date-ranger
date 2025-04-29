@@ -9,6 +9,8 @@ import {GregorianDateCalendarComponent} from "./gregorian-date-calendar/gregoria
 import {GregorianDateRangerComponent} from "./gregorian-date-ranger/gregorian-date-ranger.component";
 import {PersianDateRangerDirective} from "./directives/persian-date-ranger.directive";
 import {GregorianDateRangerDirective} from "./directives/gregorian-date-ranger.directive";
+import {PersianEventCalendarComponent} from "./persian-event-calendar/persian-event-calendar.component";
+import {GregorianEventCalendarComponent} from "./gregorian-event-calendar/gregorian-event-calendar.component";
 
 
 @NgModule({
@@ -20,7 +22,9 @@ import {GregorianDateRangerDirective} from "./directives/gregorian-date-ranger.d
     OutsideDirective,
     StickyFlipPositionDirective,
     PersianDateRangerDirective,
-    GregorianDateRangerDirective
+    GregorianDateRangerDirective,
+    PersianEventCalendarComponent,
+    GregorianEventCalendarComponent
   ],
   imports: [
     CommonModule,
@@ -32,7 +36,9 @@ import {GregorianDateRangerDirective} from "./directives/gregorian-date-ranger.d
     GregorianDateCalendarComponent,
     GregorianDateRangerComponent,
     PersianDateRangerDirective,
-    GregorianDateRangerDirective
+    GregorianDateRangerDirective,
+    PersianEventCalendarComponent,
+    GregorianEventCalendarComponent
   ]
 })
 export class PersianDateRangerModule {

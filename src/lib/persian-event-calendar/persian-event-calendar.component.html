@@ -1,0 +1,129 @@
+<div class="date-content">
+  <div class="date-container"
+       [ngClass]="[currentMonthShadow && selectedMonth === currentMonth ? 'date-container-shadow':'']">
+
+    <div class="date-container-header">
+      <div class="custom-col-3 changeDateContainer">
+        <ng-container *ngIf="showGotoToday">
+          <div class="current-day-content">
+            <div class="btn current-day" (click)="gotoToday()">امروز</div>
+          </div>
+        </ng-container>
+        <ng-container>
+          <div class="arrows">
+            <div *ngIf="enableNavigateMonth && enableChangeMonth" (click)="changeMonth(-1)"
+                 class="btn arrow">
+              <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
+                <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" fill="#515961"/>
+              </svg>
+            </div>
+
+            <div *ngIf="enableNavigateMonth && enableChangeMonth" (click)="changeMonth(1)"
+                 class="btn arrow">
+              <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
+                <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z" fill="#515961"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="year-header">
+            <div class="month-container" (clickOutSide)="showMonthList = false">
+              <div [ngClass]="[enableChangeMonth ? '' : 'overlay-container']"
+                   (click)="showMonthList = !showMonthList"
+                   class="title month-title">
+                <span>{{ selectedMonthTitle }}</span>
+                <div class="btn arrow month-arrow" [ngClass]="showMonthList ? '' : 'month-arrow-routed'">
+                  <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
+                    <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z" fill="#484d56"/>
+                  </svg>
+                </div>
+              </div>
+
+              <div *ngIf="showMonthList" class="month-list">
+                <div
+                  *ngFor="let month of monthsTitles; let i = index"
+                  (click)="selectMonth(i)"
+                  class="month-item">
+                  {{ month }}
+                </div>
+              </div>
+            </div>
+            <div class="year-container" (clickOutSide)="showYearsList = false">
+              <div [ngClass]="[enableChangeYear ? '' : 'overlay-container']"
+                   (click)="showYearsList = !showYearsList" class="title year-title">
+                <span>{{ shownYear }}</span>
+                <div class="btn arrow month-arrow" [ngClass]="showYearsList ? '' : 'month-arrow-routed'">
+                  <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
+                    <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z" fill="#484d56"/>
+                  </svg>
+                </div>
+              </div>
+              <div *ngIf="showYearsList" #scrollContainer class="year-list" (scroll)="onScroll()">
+                <div
+                  *ngFor="let year of years"
+                  (click)="selectYear(year)"
+                  [class.active]="year === selectedYear"
+                  class="year-item">
+                  {{ year }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+      <div class="custom-col-3">
+      </div>
+      <div class="custom-col-3 currentDate">
+        {{ getCurrentDay() }}
+      </div>
+    </div>
+
+    <div class="date-container-body">
+      <ng-container>
+        <div class="daysOfWeek" *ngFor="let week of weeks">
+          <div class="day" *ngFor="let weekDay of week">
+
+            <div class="week" *ngIf="weekDay.dayTitle">{{ weekDay.dayTitle }}</div>
+
+            <div *ngIf="weekDay.day"
+                 [ngClass]="[
+                   'days',
+                   weekDay.holiday ? 'holiday' : '',
+                   weekDay.datesBetween ? 'datesBetween' : '',
+                   weekDay.currentMonth ? '' : 'nearDays',
+                   weekDay.disabled ? 'disabled-day' : '',
+                   dayClass
+                 ]"
+                 (click)="onDaySelected(weekDay);"
+                 (pointermove)="onHoverDay(weekDay)">
+              <div class="day-number">
+                <div [ngClass]="[weekDay.currentDay ? 'currentDay' : '']">
+                  {{ weekDay.day }}
+                </div>
+              </div>
+              <ng-container *ngIf="weekDay.events?.length">
+                <ng-container *ngFor="let event of weekDay.events.slice(0, maxEventsPerDay)">
+                  <div [ngClass]="[
+                       'event',
+                       eventClass
+                       ]"
+                       (click)="clickOnEvent(event)"
+                       [ngStyle]="{ 'background-color': event.color }">
+                    <span class="event-item event-item-title" [ngClass]="getEventTime(event) ? 'hasTime' : ''">{{ event.title }}</span>
+                    <span class="event-item-time">{{ getEventTime(event) }}</span>
+                  </div>
+                </ng-container>
+
+                <div *ngIf="weekDay.events.length > maxEventsPerDay"
+                     class="more-events"
+                     (click)="openEventsPopup(weekDay)">
+                  +{{ weekDay.events.length - maxEventsPerDay }} مورد دیگر
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

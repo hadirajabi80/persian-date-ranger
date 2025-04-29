@@ -5,4 +5,10 @@ export type DateFormat =
   | 'jYYYY/jMM/jDD'
   | 'jYYYY-jMM-jDD'
   | 'jYYYYjMMjDD'
-  | 'timestamp';
+  | 'timestamp'
+  | 'jYYYY/jMM/jDD HH:mm'
+  | 'jYYYY-jMM-jDD HH:mm'
+  | 'jYYYYjMMjDD HH:mm'
+  | 'YYYY/MM/DD HH:mm'
+  | 'YYYY-MM-DD HH:mm'
+  | 'YYYYMMDD HH:mm'

@@ -41,6 +41,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
   @Input() holidays: { format: string, date: any[] } | undefined;
   @Input() dayClass: string = '';
   @Input() eventClass: string = '';
+  @Input() selectedDateClass: string = '';
 
   @Input() minDate: string;
   @Input() maxDate: string;
@@ -55,10 +56,17 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
   @Input() eventCategories: IEventCategory[] = [];
   @Input() maxEventsPerDay: number = 3;
 
+  @Input() outputFormatConfig: { [key: string]: string } = {};
+
   @Output() moreEventsEmit: EventEmitter<IEvent[]> = new EventEmitter<IEvent[]>();
   @Output() selectedEventEmit: EventEmitter<IEvent> = new EventEmitter<IEvent>();
 
   @Output() showDateValue: EventEmitter<string> = new EventEmitter<string>();
+  @Output() getByOutputFormatConfig: EventEmitter<any> = new EventEmitter<any>();
+
+  @Output() changeMonthEmit: EventEmitter<any> = new EventEmitter<any>();
+  @Output() changeYearEmit: EventEmitter<any> = new EventEmitter<any>();
+  @Output() goToTodayEmit: EventEmitter<any> = new EventEmitter<any>();
 
   selectedYear: number = Number(moment().year());
   selectedMonth: number = Number(moment().month());
@@ -179,6 +187,16 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
           this.onHoverAction();
         });
       }
+    }
+
+    if (changes['eventCategories']) {
+      this.eventCategories = changes['eventCategories'].currentValue;
+      this.updateCalendarWeeks();
+    }
+
+    if (changes['events']) {
+      this.events = changes['events'].currentValue;
+      this.updateCalendarWeeks();
     }
   }
 
@@ -337,6 +355,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
     this.updateCalendarWeeks();
     this.cd.markForCheck();
     this.showMonthList = false;
+    this.changeMonthEmit.emit(monthIndex);
   }
 
   selectYear(newYear: number): void {
@@ -346,6 +365,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
       this.cd.markForCheck();
       this.showYearsList = false;
       this.selectedYear = newYear;
+      this.changeYearEmit.emit(newYear);
     }
   }
 
@@ -422,6 +442,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
     }
     if (emitValue) {
       this.showDateValue.emit(dateStr);
+      this.getFormattedOutput(dateStr);
     }
   }
 
@@ -433,6 +454,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
 
     this.selectMonth(this.shownMonth);
     this.selectYear(this.shownYear);
+    this.goToTodayEmit.emit({year, month, day});
   }
 
   private checkToday(date: Moment): boolean {
@@ -501,6 +523,14 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
     } else {
       return moment(dateStr, this.dateFormat, 'fa', true);
     }
+  }
+
+  isSelectedDay(weekDay: any): boolean {
+    return (
+      this.selectedYear === weekDay.year &&
+      this.selectedMonth === weekDay.month &&
+      this.selectedDay === weekDay.day
+    );
   }
 
   getCurrentDay() {
@@ -592,4 +622,19 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
     }
   }
 
+  getFormattedOutput(date: any) {
+    const output: { [key: string]: string } = {};
+
+    for (const key in this.outputFormatConfig) {
+      const format = this.outputFormatConfig[key];
+
+      if (format.includes('j')) {
+        output[key] = moment(date).locale('fa').format(format);
+      } else {
+        output[key] = moment(date).format(format);
+      }
+    }
+
+    this.getByOutputFormatConfig.emit(output);
+  }
 }

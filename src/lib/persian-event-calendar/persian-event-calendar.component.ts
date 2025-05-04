@@ -2,13 +2,15 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  Component, ElementRef,
+  Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnChanges,
   OnInit,
   Output,
-  SimpleChanges, ViewChild
+  SimpleChanges,
+  ViewChild
 } from '@angular/core';
 import {DateFormat} from "../models/date-format";
 import {Subject} from "rxjs";
@@ -24,7 +26,7 @@ import {Weekday} from "../models/week-day";
   styleUrl: './persian-event-calendar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PersianEventCalendarComponent implements OnInit, OnChanges,AfterViewInit {
+export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterViewInit {
 
   @Input() showNearMonthDays: boolean = true;
   @Input() showGotoToday: boolean = true;
@@ -39,6 +41,7 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges,AfterVie
   @Input() holidays: { format: string, date: any[] } | undefined;
   @Input() dayClass: string = '';
   @Input() eventClass: string = '';
+  @Input() selectedDateClass: string = '';
 
   @Input() minDate: string;
   @Input() maxDate: string;
@@ -53,10 +56,17 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges,AfterVie
   @Input() eventCategories: IEventCategory[] = [];
   @Input() maxEventsPerDay: number = 3;
 
+  @Input() outputFormatConfig: { [key: string]: DateFormat } = {};
+
   @Output() moreEventsEmit: EventEmitter<IEvent[]> = new EventEmitter<IEvent[]>();
   @Output() selectedEventEmit: EventEmitter<IEvent> = new EventEmitter<IEvent>();
 
   @Output() showDateValue: EventEmitter<string> = new EventEmitter<string>();
+  @Output() getByOutputFormatConfig: EventEmitter<any> = new EventEmitter<any>();
+
+  @Output() changeMonthEmit: EventEmitter<any> = new EventEmitter<any>();
+  @Output() changeYearEmit: EventEmitter<any> = new EventEmitter<any>();
+  @Output() goToTodayEmit: EventEmitter<any> = new EventEmitter<any>();
 
   selectedYear: number = Number(moment().jYear());
   selectedMonth: number = Number(moment().jMonth());
@@ -166,6 +176,16 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges,AfterVie
           this.onHoverAction();
         });
       }
+    }
+
+    if (changes['eventCategories']) {
+      this.eventCategories = changes['eventCategories'].currentValue;
+      this.updateCalendarWeeks();
+    }
+
+    if (changes['events']) {
+      this.events = changes['events'].currentValue;
+      this.updateCalendarWeeks();
     }
   }
 
@@ -323,6 +343,7 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges,AfterVie
     this.updateCalendarWeeks();
     this.cd.markForCheck();
     this.showMonthList = false;
+    this.changeMonthEmit.emit(monthIndex);
   }
 
   selectYear(newYear: number): void {
@@ -332,6 +353,7 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges,AfterVie
       this.cd.markForCheck();
       this.showYearsList = false;
       this.selectedYear = newYear;
+      this.changeYearEmit.emit(newYear);
     }
   }
 
@@ -408,6 +430,7 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges,AfterVie
     }
     if (emitValue) {
       this.showDateValue.emit(dateStr);
+      this.getFormattedOutput(dateStr);
     }
   }
 
@@ -419,6 +442,7 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges,AfterVie
 
     this.selectMonth(this.shownMonth);
     this.selectYear(this.shownYear);
+    this.goToTodayEmit.emit({year, month, day});
   }
 
   private checkToday(date: Moment): boolean {
@@ -580,9 +604,25 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges,AfterVie
     const index = this.years.indexOf(this.selectedYear);
     if (index !== -1) {
       const scrollPosition = index * 40 - 120;
-      if (this.scrollContainer){
+      if (this.scrollContainer) {
         this.scrollContainer.nativeElement.scrollTop = scrollPosition;
       }
     }
+  }
+
+  getFormattedOutput(date: any) {
+    const output: { [key: string]: string } = {};
+
+    for (const key in this.outputFormatConfig) {
+      const format = this.outputFormatConfig[key];
+
+      if (format.includes('j')) {
+        output[key] = moment(date, this.dateFormat).locale('fa').format(format);
+      } else {
+        output[key] = moment(date, this.dateFormat).format(format);
+      }
+    }
+
+    this.getByOutputFormatConfig.emit(output);
   }
 }

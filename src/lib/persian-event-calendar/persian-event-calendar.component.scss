@@ -484,6 +484,12 @@
   background: #f0f0f0;
 }
 
+.month-item.active {
+  background: #4e6781;
+  color: white;
+  font-weight: bold;
+}
+
 .month-title{
   display: flex;
   align-items: center;

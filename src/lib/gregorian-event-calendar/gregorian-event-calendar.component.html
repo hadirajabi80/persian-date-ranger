@@ -41,6 +41,7 @@
               <div *ngIf="showMonthList" class="month-list">
                 <div
                   *ngFor="let month of monthsTitles; let i = index"
+                  [class.active]="i === shownMonth"
                   (click)="selectMonth(i)"
                   class="month-item">
                   {{ month.fullName }}
@@ -91,6 +92,7 @@
                    weekDay.datesBetween ? 'datesBetween' : '',
                    weekDay.currentMonth ? '' : 'nearDays',
                    weekDay.disabled ? 'disabled-day' : '',
+                   isSelectedDay(weekDay) ? selectedDateClass : '',
                    dayClass
                  ]"
                  (click)="onDaySelected(weekDay);"

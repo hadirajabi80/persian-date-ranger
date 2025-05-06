@@ -1,6 +1,6 @@
 <div class="date-content">
   <div class="date-container"
-       [ngClass]="[currentMonthShadow && selectedMonth === currentMonth ? 'date-container-shadow':'']">
+       [ngClass]="[currentMonthShadow && selectedMonth === currentMonth ? 'date-container-shadow':'' , dateContainerClass]">
 
     <div class="date-container-header">
       <div class="custom-col-3 changeDateContainer">
@@ -73,7 +73,7 @@
       </div>
       <div class="custom-col-3">
       </div>
-      <div class="custom-col-3 currentDate">
+      <div class="custom-col-3 currentDate" *ngIf="showCurrentDayDetails">
         {{ getCurrentDay() }}
       </div>
     </div>
@@ -96,11 +96,42 @@
                    dayClass
                  ]"
                  (click)="onDaySelected(weekDay);"
+                 (pointerenter)="hoverOnDay(weekDay)"
+                 (pointerleave)="onLeaveDay(weekDay)"
                  (pointermove)="onHoverDay(weekDay)">
-              <div class="day-number">
-                <div [ngClass]="[weekDay.currentDay ? 'currentDay' : '']">
-                  {{ weekDay.day }}
-                </div>
+              <div class="dayIcons"
+                   [ngClass]="weekDay.actionButtons.length > 0 && weekDay.isHovered  ? '' : 'no-icons'">
+                <ng-container *ngFor="let action of weekDay.actionButtons">
+                  <div class="actionsContainer" [ngStyle]="{'width': action.size || '24px' , 'height':action.size || '24px' }"
+                       [class.visible]="weekDay.isHovered && weekDay.actionButtons.length > 0">
+                    <div *ngIf="action.type === 'ADD'" (click)="clickOnActionButton(action)">
+                      <svg xmlns="http://www.w3.org/2000/svg"
+                           [attr.height]="action.size || '24px'" viewBox="0 -960 960 960"
+                           [attr.width]="action.size || '24px'" [attr.fill]="action.color || '#1f1f1f'">
+                        <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
+                      </svg>
+                    </div>
+                    <div *ngIf="action.type === 'EDIT'" (click)="clickOnActionButton(action)">
+                      <svg xmlns="http://www.w3.org/2000/svg" [attr.height]="action.size || '24px'"
+                           viewBox="0 -960 960 960"
+                           [attr.width]="action.size || '24px'" [attr.fill]="action.color || '#1f1f1f'">
+                        <path
+                          d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
+                      </svg>
+                    </div>
+                    <div *ngIf="action.type === 'DETAILS'" (click)="clickOnActionButton(action)">
+                      <svg xmlns="http://www.w3.org/2000/svg" [attr.height]="action.size || '24px'"
+                           viewBox="0 -960 960 960"
+                           [attr.width]="action.size || '24px'" [attr.fill]="action.color || '#1f1f1f'">
+                        <path
+                          d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/>
+                      </svg>
+                    </div>
+                  </div>
+                </ng-container>
+                <span [ngClass]="[weekDay.currentDay ? 'currentDay' : '']">
+                    {{ weekDay.day }}
+                  </span>
               </div>
               <ng-container *ngIf="weekDay.events?.length">
                 <ng-container *ngFor="let event of weekDay.events.slice(0, maxEventsPerDay)">
@@ -110,7 +141,8 @@
                        ]"
                        (click)="clickOnEvent(event)"
                        [ngStyle]="{ 'background-color': event.color }">
-                    <span class="event-item event-item-title" [ngClass]="getEventTime(event) ? 'hasTime' : ''">{{ event.title }}</span>
+                    <span class="event-item event-item-title"
+                          [ngClass]="getEventTime(event) ? 'hasTime' : ''">{{ event.title }}</span>
                     <span class="event-item-time">{{ getEventTime(event) }}</span>
                   </div>
                 </ng-container>

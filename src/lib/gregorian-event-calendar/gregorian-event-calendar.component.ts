@@ -19,6 +19,8 @@ import moment, {Moment} from "jalali-moment";
 import {Subject} from "rxjs";
 import {EventPeriods} from "../models/event-periods";
 import {Weekday} from "../models/week-day";
+import {IActionButton} from "../models/action-button";
+import {IPeriodicItem} from "../models/periodic-item";
 
 @Component({
   selector: 'gregorian-event-calendar',
@@ -42,6 +44,8 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
   @Input() dayClass: string = '';
   @Input() eventClass: string = '';
   @Input() selectedDateClass: string = '';
+  @Input() dateContainerClass: string = '';
+  @Input() showCurrentDayDetails = true;
 
   @Input() minDate: string;
   @Input() maxDate: string;
@@ -49,6 +53,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
   @Input() dateFormat: DateFormat = "YYYY/MM/DD";
   @Input() defaultValue: boolean = false;
   @Input() showFullDayTitle: boolean = false;
+  @Input() showActionsByHover: boolean = false;
 
   @Input() datesBetween: string[] = [];
 
@@ -57,6 +62,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
   @Input() maxEventsPerDay: number = 3;
 
   @Input() outputFormatConfig: { [key: string]: string } = {};
+  @Input() actionButtons: IActionButton[] = [];
 
   @Output() moreEventsEmit: EventEmitter<IEvent[]> = new EventEmitter<IEvent[]>();
   @Output() selectedEventEmit: EventEmitter<IEvent> = new EventEmitter<IEvent>();
@@ -67,10 +73,11 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
   @Output() changeMonthEmit: EventEmitter<any> = new EventEmitter<any>();
   @Output() changeYearEmit: EventEmitter<any> = new EventEmitter<any>();
   @Output() goToTodayEmit: EventEmitter<any> = new EventEmitter<any>();
+  @Output() actionButtonsEmit: EventEmitter<IActionButton> = new EventEmitter<IActionButton>();
 
-  selectedYear: number = Number(moment().year());
-  selectedMonth: number = Number(moment().month());
-  selectedDay: number = Number(moment().date());
+  @Input() selectedYear: number = Number(moment().year());
+  @Input() selectedMonth: number = Number(moment().month());
+  @Input() selectedDay: number = Number(moment().date());
 
   currentMonth: number = Number(moment().month());
 
@@ -198,6 +205,16 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
       this.events = changes['events'].currentValue;
       this.updateCalendarWeeks();
     }
+
+    if (changes['actionButtons']) {
+      this.actionButtons = changes['actionButtons'].currentValue;
+      this.updateCalendarWeeks();
+    }
+
+    if (changes['showActionsByHover']) {
+      this.showActionsByHover = changes['showActionsByHover'].currentValue;
+      this.updateCalendarWeeks();
+    }
   }
 
   private initWeekTitles(): void {
@@ -224,7 +241,8 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
       for (let i = 0; i < 7; i++) {
         if (this.showNearMonthDays || currentDay.month() === this.shownMonth) {
 
-          const dayEvents = this.getEventsForDate(currentDay);
+          const dayEvents = this.getPeriodicItemsForDate<IEvent>(currentDay, this.events);
+          const dayActions = this.getPeriodicItemsForDate<IActionButton>(currentDay, this.actionButtons);
 
           week.push({
             year: currentDay.year(),
@@ -235,6 +253,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
             datesBetween: this.isInHoverRange(currentDay),
             currentMonth: this.showNearMonthDays ? currentDay.month() === this.shownMonth : true,
             disabled: !this.isWithinRange(currentDay),
+            isHovered: !this.showActionsByHover,
             events: dayEvents.map(ev => ({
               title: ev.title,
               color: this.getEventColor(ev),
@@ -244,13 +263,24 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
               description: ev.description,
               enterDateFormat: ev.enterDateFormat,
               period: ev.period,
-              categoryId: ev.categoryId,
+              categoryId: ev.categoryName,
               location: ev.location,
               reminders: ev.reminders,
               repeatOnDays: ev.repeatOnDays
             })).sort((a, b) => {
               return (b.priority ?? 2) - (a.priority ?? 2);
-            })
+            }),
+            actionButtons: dayActions.map(ev => ({
+              title: ev.title,
+              type: ev.type,
+              color: ev.color,
+              size: ev.size,
+              startDate: ev.startDate,
+              endDate: ev.endDate,
+              enterDateFormat: ev.enterDateFormat,
+              period: ev.period,
+              repeatOnDays: ev.repeatOnDays,
+            }))
           });
 
         } else {
@@ -313,6 +343,57 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
     });
   }
 
+  private getPeriodicItemsForDate<T extends IPeriodicItem>(date: Moment, items: T[]): T[] {
+    const formattedDate = date.format(this.dateFormat);
+    return items.filter(item => {
+      const eventStart = moment(item.startDate, item.enterDateFormat);
+      const eventEnd = moment(item.endDate, item.enterDateFormat);
+      const formattedEventStart = moment(item.startDate, item.enterDateFormat).format(this.dateFormat);
+
+      if (date.isBefore(eventStart, 'day') || (item.endDate && date.isAfter(eventEnd, 'day'))) {
+        return false;
+      }
+      if (item.period === EventPeriods.Once) {
+        return formattedDate === formattedEventStart;
+      }
+
+      if (item.period === EventPeriods.Daily) {
+        return true;
+      }
+
+      if (item.period === EventPeriods.EveryOtherDay) {
+        const diff = date.diff(eventStart, 'days');
+        return diff % 2 === 0;
+      }
+
+      if (item.period === EventPeriods.EvenDays) {
+        const weekday = date.day();
+        return [6, 1, 3].includes(weekday);
+      }
+
+      if (item.period === EventPeriods.OddDays) {
+        const weekday = date.day();
+        return [0, 2, 4].includes(weekday);
+      }
+
+      if (item.period === EventPeriods.Weekly) {
+        const dayOfWeek = date.day();
+        return item.repeatOnDays?.includes(dayOfWeek as Weekday);
+      }
+
+      if (item.period === EventPeriods.Monthly) {
+        return eventStart.date() === date.date();
+      }
+
+      if (item.period === EventPeriods.Yearly) {
+        return eventStart.month() === date.month() && eventStart.date() === date.date();
+      }
+
+      return false;
+    });
+  }
+
+
   getEventTime(event: IEvent) {
     if (['jYYYY/jMM/jDD HH:mm', 'jYYYY-jMM-jDD HH:mm', 'jYYYYjMMjDD HH:mm', 'YYYY/MM/DD HH:mm', 'YYYY-MM-DD HH:mm', 'YYYYMMDD HH:mm']
       .includes(event.enterDateFormat)) {
@@ -333,7 +414,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
   }
 
   private getEventColor(event: IEvent): string {
-    const category = this.eventCategories.find(c => c.name === event.categoryId);
+    const category = this.eventCategories.find(c => c.name === event.categoryName);
     return category ? category.color : '#000000';
   }
 
@@ -636,5 +717,22 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
     }
 
     this.getByOutputFormatConfig.emit(output);
+  }
+
+  clickOnActionButton(actionButton: IActionButton) {
+    this.actionButtonsEmit.emit(actionButton);
+  }
+
+
+  hoverOnDay(weekDay: any): void {
+    if (weekDay.actionButtons.length > 0 && this.showActionsByHover) {
+      weekDay.isHovered = true;
+    }
+  }
+
+  onLeaveDay(weekDay: any): void {
+    if (this.showActionsByHover) {
+      weekDay.isHovered = false;
+    }
   }
 }

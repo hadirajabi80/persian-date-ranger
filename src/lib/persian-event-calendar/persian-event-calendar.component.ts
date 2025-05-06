@@ -19,6 +19,8 @@ import {IEvent} from "../models/event";
 import {IEventCategory} from "../models/event-category";
 import {EventPeriods} from "../models/event-periods";
 import {Weekday} from "../models/week-day";
+import {IActionButton} from "../models/action-button";
+import {IPeriodicItem} from "../models/periodic-item";
 
 @Component({
   selector: 'persian-event-calendar',
@@ -42,6 +44,8 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
   @Input() dayClass: string = '';
   @Input() eventClass: string = '';
   @Input() selectedDateClass: string = '';
+  @Input() dateContainerClass: string = '';
+  @Input() showCurrentDayDetails = true;
 
   @Input() minDate: string;
   @Input() maxDate: string;
@@ -49,12 +53,15 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
   @Input() dateFormat: DateFormat = "jYYYY/jMM/jDD";
   @Input() defaultValue: boolean = false;
   @Input() showFullDayTitle: boolean = false;
+  @Input() showActionsByHover: boolean = false;
 
   @Input() datesBetween: string[] = [];
 
   @Input() events: IEvent[] = [];
   @Input() eventCategories: IEventCategory[] = [];
   @Input() maxEventsPerDay: number = 3;
+
+  @Input() actionButtons: IActionButton[] = [];
 
   @Input() outputFormatConfig: { [key: string]: DateFormat } = {};
 
@@ -67,10 +74,11 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
   @Output() changeMonthEmit: EventEmitter<any> = new EventEmitter<any>();
   @Output() changeYearEmit: EventEmitter<any> = new EventEmitter<any>();
   @Output() goToTodayEmit: EventEmitter<any> = new EventEmitter<any>();
+  @Output() actionButtonsEmit: EventEmitter<IActionButton> = new EventEmitter<IActionButton>();
 
-  selectedYear: number = Number(moment().jYear());
-  selectedMonth: number = Number(moment().jMonth());
-  selectedDay: number = Number(moment().jDate());
+  @Input() selectedYear: number = Number(moment().jYear());
+  @Input() selectedMonth: number = Number(moment().jMonth());
+  @Input() selectedDay: number = Number(moment().jDate());
 
   currentMonth: number = Number(moment().jMonth());
 
@@ -187,6 +195,11 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
       this.events = changes['events'].currentValue;
       this.updateCalendarWeeks();
     }
+
+    if (changes['actionButtons']) {
+      this.actionButtons = changes['actionButtons'].currentValue;
+      this.updateCalendarWeeks();
+    }
   }
 
   private initWeekTitles(): void {
@@ -212,8 +225,8 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
       for (let i = 0; i < 7; i++) {
         if (this.showNearMonthDays || currentDay.jMonth() === this.shownMonth) {
 
-          const dayEvents = this.getEventsForDate(currentDay);
-
+          const dayEvents = this.getPeriodicItemsForDate<IEvent>(currentDay, this.events);
+          const dayActions = this.getPeriodicItemsForDate<IActionButton>(currentDay, this.actionButtons);
           week.push({
             year: currentDay.jYear(),
             month: currentDay.jMonth(),
@@ -223,6 +236,7 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
             datesBetween: this.isInHoverRange(currentDay),
             currentMonth: this.showNearMonthDays ? currentDay.jMonth() === this.shownMonth : true,
             disabled: !this.isWithinRange(currentDay),
+            isHovered: !this.showActionsByHover,
             events: dayEvents.map(ev => ({
               title: ev.title,
               color: this.getEventColor(ev),
@@ -232,13 +246,24 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
               description: ev.description,
               enterDateFormat: ev.enterDateFormat,
               period: ev.period,
-              categoryId: ev.categoryId,
+              categoryId: ev.categoryName,
               location: ev.location,
               reminders: ev.reminders,
               repeatOnDays: ev.repeatOnDays
             })).sort((a, b) => {
               return (b.priority ?? 2) - (a.priority ?? 2);
-            })
+            }),
+            actionButtons: dayActions.map(ev => ({
+              title: ev.title,
+              type: ev.type,
+              color: ev.color,
+              size: ev.size,
+              startDate: ev.startDate,
+              endDate: ev.endDate,
+              enterDateFormat: ev.enterDateFormat,
+              period: ev.period,
+              repeatOnDays: ev.repeatOnDays,
+            }))
           });
 
         } else {
@@ -251,49 +276,50 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
     this.weeks = weeksArray;
   }
 
-  private getEventsForDate(date: Moment): IEvent[] {
+  private getPeriodicItemsForDate<T extends IPeriodicItem>(date: Moment, items: T[]): T[] {
     const formattedDate = date.format(this.dateFormat);
-    return this.events.filter(event => {
-      const eventStart = moment(event.startDate, this.dateFormat);
-      const eventEnd = moment(event.endDate, this.dateFormat);
-      const FormatedEventStart = moment(event.startDate, event.enterDateFormat).format(this.dateFormat);
+    return items.filter(item => {
+      const eventStart = moment(item.startDate, item.enterDateFormat);
+      const eventEnd = moment(item.endDate, item.enterDateFormat);
+      const formattedEventStart = moment(item.startDate, item.enterDateFormat).format(this.dateFormat);
 
-      if (date.isBefore(eventStart, 'day') || (event.endDate && date.isAfter(eventEnd, 'day'))) {
+      if (date.isBefore(eventStart, 'day') || (item.endDate && date.isAfter(eventEnd, 'day'))) {
         return false;
       }
-      if (event.period === EventPeriods.Once) {
-        return formattedDate === FormatedEventStart;
+
+      if (item.period === EventPeriods.Once) {
+        return formattedDate === formattedEventStart;
       }
 
-      if (event.period === EventPeriods.Daily) {
+      if (item.period === EventPeriods.Daily) {
         return true;
       }
 
-      if (event.period === EventPeriods.EveryOtherDay) {
+      if (item.period === EventPeriods.EveryOtherDay) {
         const diff = date.diff(eventStart, 'days');
         return diff % 2 === 0;
       }
 
-      if (event.period === EventPeriods.EvenDays) {
+      if (item.period === EventPeriods.EvenDays) {
         const weekday = date.day();
         return [6, 1, 3].includes(weekday);
       }
 
-      if (event.period === EventPeriods.OddDays) {
+      if (item.period === EventPeriods.OddDays) {
         const weekday = date.day();
         return [0, 2, 4].includes(weekday);
       }
 
-      if (event.period === EventPeriods.Weekly) {
+      if (item.period === EventPeriods.Weekly) {
         const dayOfWeek = date.day();
-        return event.repeatOnDays?.includes(dayOfWeek as Weekday);
+        return item.repeatOnDays?.includes(dayOfWeek as Weekday);
       }
 
-      if (event.period === EventPeriods.Monthly) {
+      if (item.period === EventPeriods.Monthly) {
         return eventStart.jDate() === date.jDate();
       }
 
-      if (event.period === EventPeriods.Yearly) {
+      if (item.period === EventPeriods.Yearly) {
         return eventStart.jMonth() === date.jMonth() && eventStart.jDate() === date.jDate();
       }
 
@@ -321,7 +347,7 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
   }
 
   private getEventColor(event: IEvent): string {
-    const category = this.eventCategories.find(c => c.name === event.categoryId);
+    const category = this.eventCategories.find(c => c.name === event.categoryName);
     return category ? category.color : '#000000';
   }
 
@@ -369,15 +395,6 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
     this.hoveredMonth = weekDay.month;
     this.hoveredYear = weekDay.year;
     this.hoverSubject.next();
-  }
-
-  private checkSelectedDateRange(selectedDate: string): void {
-    if (this.rangePicker && this.startDate && !this.endDate) {
-      this.endDate = selectedDate;
-    } else if (this.rangePicker) {
-      this.startDate = selectedDate;
-      this.endDate = null;
-    }
   }
 
   private onHoverAction(): void {
@@ -624,5 +641,21 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
     }
 
     this.getByOutputFormatConfig.emit(output);
+  }
+
+  clickOnActionButton(actionButton: IActionButton) {
+    this.actionButtonsEmit.emit(actionButton);
+  }
+
+  hoverOnDay(weekDay: any): void {
+    if (weekDay.actionButtons.length > 0 && this.showActionsByHover) {
+      weekDay.isHovered = true;
+    }
+  }
+
+  onLeaveDay(weekDay: any): void {
+    if (this.showActionsByHover) {
+      weekDay.isHovered = false;
+    }
   }
 }

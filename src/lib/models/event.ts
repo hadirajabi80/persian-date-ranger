@@ -1,18 +1,10 @@
 import {EventPriority} from "./event-priority";
-import {EventPeriods} from "./event-periods";
-import {Weekday} from "./week-day";
-import {DateFormat} from "./date-format";
+import {IPeriodicItem} from "./periodic-item";
 
-export interface IEvent {
-  title: string;
+export interface IEvent extends IPeriodicItem {
   description?: string;
-  startDate?: string;
-  endDate?: string;
-  enterDateFormat: DateFormat;
-  period: EventPeriods;
-  categoryId?: string;
+  categoryName?: string;
   location?: string;
   priority?: EventPriority;
   reminders?: number[];
-  repeatOnDays?: Weekday[];
 }

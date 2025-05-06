@@ -537,3 +537,23 @@
 .year-container{
   position: relative;
 }
+
+
+.dayIcons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 24px;
+}
+
+.dayIcons.no-icons {
+  justify-content: flex-end;
+}
+
+.actionsContainer {
+  display: none;
+}
+
+.actionsContainer.visible {
+  display: flex;
+}

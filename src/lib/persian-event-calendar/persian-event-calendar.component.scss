@@ -93,23 +93,23 @@
 
   /* width */
   ::-webkit-scrollbar {
-    width: 5px!important;
-    height: 5px!important;
+    width: 5px !important;
+    height: 5px !important;
   }
 
   /* Track */
   ::-webkit-scrollbar-track {
-    background: #f1f1f1!important;
+    background: #f1f1f1 !important;
   }
 
   /* Handle */
   ::-webkit-scrollbar-thumb {
-    background: #888!important;
+    background: #888 !important;
   }
 
   /* Handle on hover */
   ::-webkit-scrollbar-thumb:hover {
-    background: #555!important;
+    background: #555 !important;
   }
 }
 
@@ -397,7 +397,7 @@
   min-width: 0;
 }
 
-.hasTime{
+.hasTime {
   flex: 0 0 calc(100% - 4rem);
 }
 
@@ -430,11 +430,6 @@
 
 .more-events:hover {
   font-weight: 600;
-}
-
-.day-number {
-  display: flex;
-  justify-content: end;
 }
 
 .custom-col-3 {
@@ -490,24 +485,24 @@
   font-weight: bold;
 }
 
-.month-title{
+.month-title {
   display: flex;
   align-items: center;
   color: #484d56;
 }
 
-.year-title{
+.year-title {
   display: flex;
   align-items: center;
   color: #484d56;
 }
 
-.month-arrow{
+.month-arrow {
   transform: rotate(90deg);
   transition: all 0.3s;
 }
 
-.month-arrow-routed{
+.month-arrow-routed {
   transform: rotate(270deg);
 }
 
@@ -545,6 +540,25 @@
   font-weight: bold;
 }
 
-.year-container{
+.year-container {
   position: relative;
+}
+
+.dayIcons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 24px;
+}
+
+.dayIcons.no-icons {
+  justify-content: flex-end;
+}
+
+.actionsContainer {
+  display: none;
+}
+
+.actionsContainer.visible {
+  display: flex;
 }

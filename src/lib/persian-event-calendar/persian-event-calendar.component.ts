@@ -74,7 +74,7 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
   @Output() changeMonthEmit: EventEmitter<any> = new EventEmitter<any>();
   @Output() changeYearEmit: EventEmitter<any> = new EventEmitter<any>();
   @Output() goToTodayEmit: EventEmitter<any> = new EventEmitter<any>();
-  @Output() actionButtonsEmit: EventEmitter<IActionButton> = new EventEmitter<IActionButton>();
+  @Output() actionButtonsEmit: EventEmitter<any> = new EventEmitter<any>();
 
   @Input() selectedYear: number = Number(moment().jYear());
   @Input() selectedMonth: number = Number(moment().jMonth());
@@ -150,7 +150,7 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
     }
 
     if (changes['selectedMonth'] && changes['selectedMonth'].currentValue) {
-      this.selectMonth(changes['selectedMonth'].currentValue);
+      this.selectMonth(changes['selectedMonth'].currentValue - 1);
     }
 
     if (changes['selectedYear'] && changes['selectedYear'].currentValue) {
@@ -263,6 +263,7 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
               enterDateFormat: ev.enterDateFormat,
               period: ev.period,
               repeatOnDays: ev.repeatOnDays,
+              class: ev.class
             }))
           });
 
@@ -369,7 +370,6 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
     this.updateCalendarWeeks();
     this.cd.markForCheck();
     this.showMonthList = false;
-    this.changeMonthEmit.emit(monthIndex);
   }
 
   selectYear(newYear: number): void {
@@ -379,7 +379,6 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
       this.cd.markForCheck();
       this.showYearsList = false;
       this.selectedYear = newYear;
-      this.changeYearEmit.emit(newYear);
     }
   }
 
@@ -643,8 +642,33 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
     this.getByOutputFormatConfig.emit(output);
   }
 
-  clickOnActionButton(actionButton: IActionButton) {
-    this.actionButtonsEmit.emit(actionButton);
+  clickOnActionButton(actionButton: IActionButton, weekDay: any) {
+    this.selectedYear = weekDay.year;
+    this.selectedMonth = weekDay.month;
+    this.selectedDay = weekDay.day;
+
+    let dateStr: any = moment(`${this.selectedYear}/${this.selectedMonth + 1}/${this.selectedDay}`, 'jYYYY/jMM/jDD');
+
+    if (this.dateFormat === 'timestamp') {
+      dateStr = dateStr.valueOf();
+
+    } else {
+      dateStr = dateStr.format(this.dateFormat);
+    }
+
+    const output: { [key: string]: string } = {};
+
+    for (const key in this.outputFormatConfig) {
+      const format = this.outputFormatConfig[key];
+
+      if (format.includes('j')) {
+        output[key] = moment(dateStr, this.dateFormat).locale('fa').format(format);
+      } else {
+        output[key] = moment(dateStr, this.dateFormat).format(format);
+      }
+    }
+
+    this.actionButtonsEmit.emit({actionButton, outputDate: output});
   }
 
   hoverOnDay(weekDay: any): void {
@@ -657,5 +681,13 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
     if (this.showActionsByHover) {
       weekDay.isHovered = false;
     }
+  }
+
+  emitChangeMonth(){
+    this.changeMonthEmit.emit(this.shownMonth);
+  }
+
+  emitChangeYear(){
+    this.changeYearEmit.emit(this.shownYear);
   }
 }

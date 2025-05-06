@@ -1,6 +1,6 @@
 {
   "name": "persian-date-ranger",
-  "version": "4.1.1",
+  "version": "4.1.3",
   "keywords": ["angular", "persian", "date", "picker"],
   "description": "A Persian date range picker component for Angular",
   "peerDependencies": {

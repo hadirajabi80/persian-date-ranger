@@ -73,7 +73,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
   @Output() changeMonthEmit: EventEmitter<any> = new EventEmitter<any>();
   @Output() changeYearEmit: EventEmitter<any> = new EventEmitter<any>();
   @Output() goToTodayEmit: EventEmitter<any> = new EventEmitter<any>();
-  @Output() actionButtonsEmit: EventEmitter<IActionButton> = new EventEmitter<IActionButton>();
+  @Output() actionButtonsEmit: EventEmitter<any> = new EventEmitter<any>();
 
   @Input() selectedYear: number = Number(moment().year());
   @Input() selectedMonth: number = Number(moment().month());
@@ -106,19 +106,19 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
   showMonthList = false;
   showYearsList = false;
 
-  monthsTitles: { fullName: string, shortName: string }[] = [
-    {fullName: 'January', shortName: 'Jan'},
-    {fullName: 'February', shortName: 'Feb'},
-    {fullName: 'March', shortName: 'Mar'},
-    {fullName: 'April', shortName: 'Apr'},
-    {fullName: 'May', shortName: 'May'},
-    {fullName: 'June', shortName: 'Jun'},
-    {fullName: 'July', shortName: 'Jul'},
-    {fullName: 'August', shortName: 'Aug'},
-    {fullName: 'September', shortName: 'Sep'},
-    {fullName: 'October', shortName: 'Oct'},
-    {fullName: 'November', shortName: 'Nov'},
-    {fullName: 'December', shortName: 'Dec'}
+  monthsTitles: { id: number, fullName: string, shortName: string }[] = [
+    {id: 1, fullName: 'January', shortName: 'Jan'},
+    {id: 2, fullName: 'February', shortName: 'Feb'},
+    {id: 3, fullName: 'March', shortName: 'Mar'},
+    {id: 4, fullName: 'April', shortName: 'Apr'},
+    {id: 5, fullName: 'May', shortName: 'May'},
+    {id: 6, fullName: 'June', shortName: 'Jun'},
+    {id: 7, fullName: 'July', shortName: 'Jul'},
+    {id: 8, fullName: 'August', shortName: 'Aug'},
+    {id: 9, fullName: 'September', shortName: 'Sep'},
+    {id: 10, fullName: 'October', shortName: 'Oct'},
+    {id: 11, fullName: 'November', shortName: 'Nov'},
+    {id: 12, fullName: 'December', shortName: 'Dec'}
   ];
 
   weeks: any[] = [];
@@ -160,7 +160,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
     }
 
     if (changes['selectedMonth'] && changes['selectedMonth'].currentValue) {
-      this.selectMonth(changes['selectedMonth'].currentValue);
+      this.selectMonth(changes['selectedMonth'].currentValue - 1);
     }
 
     if (changes['selectedYear'] && changes['selectedYear'].currentValue) {
@@ -280,6 +280,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
               enterDateFormat: ev.enterDateFormat,
               period: ev.period,
               repeatOnDays: ev.repeatOnDays,
+              class: ev.class
             }))
           });
 
@@ -291,56 +292,6 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
       weeksArray.push(week);
     }
     this.weeks = weeksArray;
-  }
-
-  private getEventsForDate(date: Moment): IEvent[] {
-    const formattedDate = date.format(this.dateFormat);
-    return this.events.filter(event => {
-      const eventStart = moment(event.startDate, event.enterDateFormat);
-      const eventEnd = moment(event.endDate, event.enterDateFormat);
-      const FormatedEventStart = moment(event.startDate, event.enterDateFormat).format(this.dateFormat);
-
-      if (date.isBefore(eventStart, 'day') || (event.endDate && date.isAfter(eventEnd, 'day'))) {
-        return false;
-      }
-      if (event.period === EventPeriods.Once) {
-        return formattedDate === FormatedEventStart;
-      }
-
-      if (event.period === EventPeriods.Daily) {
-        return true;
-      }
-
-      if (event.period === EventPeriods.EveryOtherDay) {
-        const diff = date.diff(eventStart, 'days');
-        return diff % 2 === 0;
-      }
-
-      if (event.period === EventPeriods.EvenDays) {
-        const weekday = date.day();
-        return [6, 1, 3].includes(weekday);
-      }
-
-      if (event.period === EventPeriods.OddDays) {
-        const weekday = date.day();
-        return [0, 2, 4].includes(weekday);
-      }
-
-      if (event.period === EventPeriods.Weekly) {
-        const dayOfWeek = date.day();
-        return event.repeatOnDays?.includes(dayOfWeek as Weekday);
-      }
-
-      if (event.period === EventPeriods.Monthly) {
-        return eventStart.date() === date.date();
-      }
-
-      if (event.period === EventPeriods.Yearly) {
-        return eventStart.month() === date.month() && eventStart.date() === date.date();
-      }
-
-      return false;
-    });
   }
 
   private getPeriodicItemsForDate<T extends IPeriodicItem>(date: Moment, items: T[]): T[] {
@@ -420,19 +371,20 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
 
   changeMonth(offset: number): void {
     this.shownMonth += offset;
-    if (this.shownMonth > 11) {
-      this.shownMonth = 0;
-      this.shownYear += 1;
-    } else if (this.shownMonth < 0) {
-      this.shownMonth = 11;
-      this.shownYear -= 1;
-    }
     this.selectMonth(this.shownMonth);
   }
 
   selectMonth(monthIndex: number): void {
     this.shownMonth = monthIndex;
-    this.selectedMonthTitle = this.monthsTitles[this.shownMonth].fullName || '';
+    if (this.shownMonth > 12) {
+      this.shownMonth = 1;
+      this.shownYear += 1;
+    } else if (this.shownMonth < 1) {
+      this.shownMonth = 12;
+      this.shownYear -= 1;
+    }
+
+    this.selectedMonthTitle = this.monthsTitles.find(x => x.id === this.shownMonth).fullName || '';
     this.updateCalendarWeeks();
     this.cd.markForCheck();
     this.showMonthList = false;
@@ -566,7 +518,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
     const currentDate = moment();
     return {
       year: currentDate.year(),
-      month: currentDate.month(),
+      month: currentDate.month() + 1,
       day: currentDate.date(),
     };
   }
@@ -719,10 +671,34 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
     this.getByOutputFormatConfig.emit(output);
   }
 
-  clickOnActionButton(actionButton: IActionButton) {
-    this.actionButtonsEmit.emit(actionButton);
-  }
+  clickOnActionButton(actionButton: IActionButton, weekDay: any) {
+    this.selectedYear = weekDay.year;
+    this.selectedMonth = weekDay.month;
+    this.selectedDay = weekDay.day;
 
+    let dateStr: any = moment(`${this.selectedYear}/${this.selectedMonth + 1}/${this.selectedDay}`, 'jYYYY/jMM/jDD');
+
+    if (this.dateFormat === 'timestamp') {
+      dateStr = dateStr.valueOf();
+
+    } else {
+      dateStr = dateStr.format(this.dateFormat);
+    }
+
+    const output: { [key: string]: string } = {};
+
+    for (const key in this.outputFormatConfig) {
+      const format = this.outputFormatConfig[key];
+
+      if (format.includes('j')) {
+        output[key] = moment(dateStr, this.dateFormat).locale('fa').format(format);
+      } else {
+        output[key] = moment(dateStr, this.dateFormat).format(format);
+      }
+    }
+
+    this.actionButtonsEmit.emit({actionButton, outputDate: output});
+  }
 
   hoverOnDay(weekDay: any): void {
     if (weekDay.actionButtons.length > 0 && this.showActionsByHover) {
@@ -734,5 +710,13 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
     if (this.showActionsByHover) {
       weekDay.isHovered = false;
     }
+  }
+
+  emitChangeMonth() {
+    this.changeMonthEmit.emit(this.shownMonth);
+  }
+
+  emitChangeYear() {
+    this.changeYearEmit.emit(this.shownYear);
   }
 }

@@ -388,7 +388,6 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
     this.updateCalendarWeeks();
     this.cd.markForCheck();
     this.showMonthList = false;
-    this.changeMonthEmit.emit(monthIndex);
   }
 
   selectYear(newYear: number): void {
@@ -398,7 +397,6 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
       this.cd.markForCheck();
       this.showYearsList = false;
       this.selectedYear = newYear;
-      this.changeYearEmit.emit(newYear);
     }
   }
 

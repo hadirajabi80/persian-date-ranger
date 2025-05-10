@@ -106,19 +106,19 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
   showMonthList = false;
   showYearsList = false;
 
-  monthsTitles: { id: number, fullName: string, shortName: string }[] = [
-    {id: 1, fullName: 'January', shortName: 'Jan'},
-    {id: 2, fullName: 'February', shortName: 'Feb'},
-    {id: 3, fullName: 'March', shortName: 'Mar'},
-    {id: 4, fullName: 'April', shortName: 'Apr'},
-    {id: 5, fullName: 'May', shortName: 'May'},
-    {id: 6, fullName: 'June', shortName: 'Jun'},
-    {id: 7, fullName: 'July', shortName: 'Jul'},
-    {id: 8, fullName: 'August', shortName: 'Aug'},
-    {id: 9, fullName: 'September', shortName: 'Sep'},
-    {id: 10, fullName: 'October', shortName: 'Oct'},
-    {id: 11, fullName: 'November', shortName: 'Nov'},
-    {id: 12, fullName: 'December', shortName: 'Dec'}
+  monthsTitles: { fullName: string, shortName: string }[] = [
+    {fullName: 'January', shortName: 'Jan'},
+    {fullName: 'February', shortName: 'Feb'},
+    {fullName: 'March', shortName: 'Mar'},
+    {fullName: 'April', shortName: 'Apr'},
+    {fullName: 'May', shortName: 'May'},
+    {fullName: 'June', shortName: 'Jun'},
+    {fullName: 'July', shortName: 'Jul'},
+    {fullName: 'August', shortName: 'Aug'},
+    {fullName: 'September', shortName: 'Sep'},
+    {fullName: 'October', shortName: 'Oct'},
+    {fullName: 'November', shortName: 'Nov'},
+    {fullName: 'December', shortName: 'Dec'}
   ];
 
   weeks: any[] = [];
@@ -160,7 +160,8 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
     }
 
     if (changes['selectedMonth'] && changes['selectedMonth'].currentValue) {
-      this.selectMonth(changes['selectedMonth'].currentValue - 1);
+      this.selectedMonth = changes['selectedMonth'].currentValue - 1;
+      this.selectMonth(this.selectedMonth);
     }
 
     if (changes['selectedYear'] && changes['selectedYear'].currentValue) {
@@ -371,20 +372,19 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
 
   changeMonth(offset: number): void {
     this.shownMonth += offset;
+    if (this.shownMonth > 11) {
+      this.shownMonth = 0;
+      this.shownYear += 1;
+    } else if (this.shownMonth < 0) {
+      this.shownMonth = 11;
+      this.shownYear -= 1;
+    }
     this.selectMonth(this.shownMonth);
   }
 
   selectMonth(monthIndex: number): void {
     this.shownMonth = monthIndex;
-    if (this.shownMonth > 12) {
-      this.shownMonth = 1;
-      this.shownYear += 1;
-    } else if (this.shownMonth < 1) {
-      this.shownMonth = 12;
-      this.shownYear -= 1;
-    }
-
-    this.selectedMonthTitle = this.monthsTitles.find(x => x.id === this.shownMonth).fullName || '';
+    this.selectedMonthTitle = this.monthsTitles[this.shownMonth].fullName || '';
     this.updateCalendarWeeks();
     this.cd.markForCheck();
     this.showMonthList = false;
@@ -485,7 +485,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
 
     this.selectMonth(this.shownMonth);
     this.selectYear(this.shownYear);
-    this.goToTodayEmit.emit({year, month, day});
+    this.goToTodayEmit.emit({year, month: month + 1, day});
   }
 
   private checkToday(date: Moment): boolean {
@@ -493,6 +493,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
       return false;
     }
     const current = this.getCurrentDate();
+
     return (current.year === date.year()
       && current.month === date.month()
       && current.day === date.date());
@@ -516,7 +517,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
     const currentDate = moment();
     return {
       year: currentDate.year(),
-      month: currentDate.month() + 1,
+      month: currentDate.month(),
       day: currentDate.date(),
     };
   }
@@ -673,8 +674,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
     this.selectedYear = weekDay.year;
     this.selectedMonth = weekDay.month;
     this.selectedDay = weekDay.day;
-
-    let dateStr: any = moment(`${this.selectedYear}/${this.selectedMonth + 1}/${this.selectedDay}`, 'jYYYY/jMM/jDD');
+    let dateStr: any = moment(`${this.selectedYear}/${this.selectedMonth + 1}/${this.selectedDay}`, 'YYYY/MM/DD');
 
     if (this.dateFormat === 'timestamp') {
       dateStr = dateStr.valueOf();
@@ -711,7 +711,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
   }
 
   emitChangeMonth() {
-    this.changeMonthEmit.emit(this.shownMonth);
+    this.changeMonthEmit.emit(this.shownMonth + 1);
   }
 
   emitChangeYear() {

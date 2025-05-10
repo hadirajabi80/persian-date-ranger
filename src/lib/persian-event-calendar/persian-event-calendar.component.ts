@@ -150,7 +150,8 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
     }
 
     if (changes['selectedMonth'] && changes['selectedMonth'].currentValue) {
-      this.selectMonth(changes['selectedMonth'].currentValue - 1);
+      this.selectedMonth = changes['selectedMonth'].currentValue - 1;
+      this.selectMonth(this.selectedMonth);
     }
 
     if (changes['selectedYear'] && changes['selectedYear'].currentValue) {
@@ -458,7 +459,7 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
 
     this.selectMonth(this.shownMonth);
     this.selectYear(this.shownYear);
-    this.goToTodayEmit.emit({year, month, day});
+    this.goToTodayEmit.emit({year, month: month + 1, day});
   }
 
   private checkToday(date: Moment): boolean {
@@ -488,7 +489,7 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
   isSelectedDay(weekDay: any): boolean {
     return (
       this.selectedYear === weekDay.year &&
-      this.selectedMonth === weekDay.month &&
+      this.selectedMonth === weekDay.month  &&
       this.selectedDay === weekDay.day
     );
   }
@@ -683,11 +684,11 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
     }
   }
 
-  emitChangeMonth(){
-    this.changeMonthEmit.emit(this.shownMonth);
+  emitChangeMonth() {
+    this.changeMonthEmit.emit(this.shownMonth + 1);
   }
 
-  emitChangeYear(){
+  emitChangeYear() {
     this.changeYearEmit.emit(this.shownYear);
   }
 }

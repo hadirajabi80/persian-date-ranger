@@ -106,7 +106,7 @@
                        [ngStyle]="{'width': action.size || '24px' , 'height':action.size || '24px' }"
                        [class.visible]="weekDay.isHovered && weekDay.actionButtons.length > 0">
                     <div *ngIf="action.type === 'ADD'" [ngClass]="[action.class || '']"
-                         (click)="clickOnActionButton(action)">
+                         (click)="clickOnActionButton(action , weekDay)">
                       <svg xmlns="http://www.w3.org/2000/svg"
                            [attr.height]="action.size || '24px'" viewBox="0 -960 960 960"
                            [attr.width]="action.size || '24px'" [attr.fill]="action.color || '#1f1f1f'">
@@ -123,7 +123,7 @@
                       </svg>
                     </div>
                     <div *ngIf="action.type === 'DETAILS'" [ngClass]="[action.class || '']"
-                         (click)="clickOnActionButton(action)">
+                         (click)="clickOnActionButton(action , weekDay)">
                       <svg xmlns="http://www.w3.org/2000/svg" [attr.height]="action.size || '24px'"
                            viewBox="0 -960 960 960"
                            [attr.width]="action.size || '24px'" [attr.fill]="action.color || '#1f1f1f'">

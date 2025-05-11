@@ -21,6 +21,7 @@ import {EventPeriods} from "../models/event-periods";
 import {Weekday} from "../models/week-day";
 import {IActionButton} from "../models/action-button";
 import {IPeriodicItem} from "../models/periodic-item";
+import {IHoliday} from "../models/holiday";
 
 @Component({
   selector: 'persian-event-calendar',
@@ -40,7 +41,7 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
   @Input() startDate: any;
   @Input() endDate: any;
   @Input() showCurrentDate: boolean = true;
-  @Input() holidays: { format: string, date: any[] } | undefined;
+  @Input() holidays: IHoliday[] = [];
   @Input() dayClass: string = '';
   @Input() eventClass: string = '';
   @Input() selectedDateClass: string = '';
@@ -472,11 +473,12 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
       && current.day === date.jDate());
   }
 
-  private checkHoliday(date: Moment): boolean {
-    if (!this.holidays || !this.holidays.date || this.holidays.date.length === 0) {
-      return false;
+  private checkHoliday(date: Moment): IHoliday | null {
+    if (!this.holidays || this.holidays.length === 0) {
+      return null;
     }
-    return this.holidays.date.indexOf(date.format(this.holidays.format)) !== -1;
+    const dayHolidays = this.getPeriodicItemsForDate<IHoliday>(date, this.holidays);
+    return dayHolidays[0];
   }
 
   private isInHoverRange(date: Moment): boolean {
@@ -489,7 +491,7 @@ export class PersianEventCalendarComponent implements OnInit, OnChanges, AfterVi
   isSelectedDay(weekDay: any): boolean {
     return (
       this.selectedYear === weekDay.year &&
-      this.selectedMonth === weekDay.month  &&
+      this.selectedMonth === weekDay.month &&
       this.selectedDay === weekDay.day
     );
   }

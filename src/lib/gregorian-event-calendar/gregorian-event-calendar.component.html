@@ -95,6 +95,7 @@
                    isSelectedDay(weekDay) ? selectedDateClass : '',
                    dayClass
                  ]"
+                 [ngStyle]="{color : weekDay.holiday?.color , background : weekDay.holiday?.background}"
                  (click)="onDaySelected(weekDay);"
                  (pointerenter)="hoverOnDay(weekDay)"
                  (pointerleave)="onLeaveDay(weekDay)"

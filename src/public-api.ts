@@ -18,4 +18,5 @@ export * from './lib/models/event-category';
 export * from './lib/models/event-priority';
 export * from './lib/models/action-button-type';
 export * from './lib/models/action-button';
+export * from './lib/models/holiday';
 export * from './lib/persian-date-ranger.module';

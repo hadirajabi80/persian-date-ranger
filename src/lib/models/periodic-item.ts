@@ -4,7 +4,7 @@ import {Weekday} from "./week-day";
 
 export interface IPeriodicItem {
   id?: number;
-  title: string;
+  title?: string;
   period: EventPeriods;
   startDate: string;
   endDate?: string;

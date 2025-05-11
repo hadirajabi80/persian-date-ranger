@@ -21,6 +21,7 @@ import {EventPeriods} from "../models/event-periods";
 import {Weekday} from "../models/week-day";
 import {IActionButton} from "../models/action-button";
 import {IPeriodicItem} from "../models/periodic-item";
+import {IHoliday} from "../models/holiday";
 
 @Component({
   selector: 'gregorian-event-calendar',
@@ -40,7 +41,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
   @Input() startDate: any;
   @Input() endDate: any;
   @Input() showCurrentDate: boolean = true;
-  @Input() holidays: { format: string, date: any[] } | undefined;
+  @Input() holidays: IHoliday[] = [];
   @Input() dayClass: string = '';
   @Input() eventClass: string = '';
   @Input() selectedDateClass: string = '';
@@ -499,11 +500,12 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
       && current.day === date.date());
   }
 
-  private checkHoliday(date: Moment): boolean {
-    if (!this.holidays || !this.holidays.date || this.holidays.date.length === 0) {
-      return false;
+  private checkHoliday(date: Moment): IHoliday | null {
+    if (!this.holidays || this.holidays.length === 0) {
+      return null;
     }
-    return this.holidays.date.indexOf(date.format(this.holidays.format)) !== -1;
+    const dayHolidays = this.getPeriodicItemsForDate<IHoliday>(date, this.holidays);
+    return dayHolidays[0];
   }
 
   private isInHoverRange(date: Moment): boolean {

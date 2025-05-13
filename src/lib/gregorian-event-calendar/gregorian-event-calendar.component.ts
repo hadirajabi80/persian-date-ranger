@@ -123,7 +123,7 @@ export class GregorianEventCalendarComponent implements OnInit, OnChanges, After
   ];
 
   weeks: any[] = [];
-  regex = /^(1[0-4]\d{2})[\/-]?(0[1-9]|1[0-2])[\/-]?(0[1-9]|[12]\d|3[01])$/;
+  regex = /^\d{4}([\/-]?)(0[1-9]|1[0-2])\1(0[1-9]|[12]\d|3[01])$/;
 
   @ViewChild('scrollContainer') scrollContainer?: ElementRef;
 

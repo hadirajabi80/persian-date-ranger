@@ -86,17 +86,14 @@ export class GregorianDateRangerComponent
         fn(date);
         return;
       }
-
       const isValidDateFormat =
         ['YYYYMMDD', 'YYYY-MM-DD', 'YYYY/MM/DD', 'jYYYY/jMM/jDD', 'jYYYY-jMM-jDD', 'jYYYYjMMjDD'].includes(this.dateFormat) &&
         this.regex.test(date);
-
       const isTimestampFormat = this.dateFormat === 'timestamp';
 
       if (isValidDateFormat || isTimestampFormat) {
         const inputFormat = isTimestampFormat ? undefined : this.dateFormat;
         const momentDate = moment(date, inputFormat);
-
         const formatted =
           this.returnFormat === 'timestamp'
             ? momentDate.valueOf()

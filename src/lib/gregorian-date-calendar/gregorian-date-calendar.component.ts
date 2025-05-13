@@ -95,7 +95,7 @@ export class GregorianDateCalendarComponent implements OnInit, OnChanges {
   ];
 
   weeks: any[] = [];
-  regex = /^(1[0-4]\d{2})[\/-]?(0[1-9]|1[0-2])[\/-]?(0[1-9]|[12]\d|3[01])$/;
+  regex = /^\d{4}([\/-]?)(0[1-9]|1[0-2])\1(0[1-9]|[12]\d|3[01])$/;
 
   constructor(private cd: ChangeDetectorRef) {
     if (this.rangePicker) {
